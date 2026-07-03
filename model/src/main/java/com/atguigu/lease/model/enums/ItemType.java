@@ -11,8 +11,8 @@ public enum ItemType implements BaseEnum {
     ROOM(2, "房间");
 
 
-    @EnumValue
-    @JsonValue
+    @EnumValue  // 作用于持久层与数据库之间，把字符串转化成数据库中对应的数据类型
+    @JsonValue  // 前端传递后端用实体类(枚举类)接受时告诉它，不要给整个赋值，赋给code就行，并且相应给前端的时候也不是响应整个类，而是将里面的code值转成json数据的一部分
     private Integer code;
     private String name;
 
