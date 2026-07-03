@@ -3,8 +3,11 @@ package com.atguigu.lease.web.admin.service.impl;
 import com.atguigu.lease.model.entity.FeeKey;
 import com.atguigu.lease.web.admin.mapper.FeeKeyMapper;
 import com.atguigu.lease.web.admin.service.FeeKeyService;
+import com.atguigu.lease.web.admin.vo.fee.FeeKeyVo;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
 * @author liubo
@@ -15,6 +18,11 @@ import org.springframework.stereotype.Service;
 public class FeeKeyServiceImpl extends ServiceImpl<FeeKeyMapper, FeeKey>
     implements FeeKeyService{
 
+    @Override
+    public List<FeeKeyVo> feeInfoList() {
+        // 直接通过父类提供的 baseMapper 访问，无需额外注入
+        return this.baseMapper.feeInfoList();
+    }
 }
 
 

@@ -13,4 +13,6 @@ import java.util.List;
 */
 public interface FeeKeyService extends IService<FeeKey> {
 
+    // 调用mapper方法
+    List<FeeKeyVo> feeInfoList();
 }
