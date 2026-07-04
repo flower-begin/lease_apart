@@ -1,7 +1,12 @@
 package com.atguigu.lease.web.admin.mapper;
 
 import com.atguigu.lease.model.entity.ApartmentInfo;
+import com.atguigu.lease.web.admin.vo.apartment.ApartmentItemVo;
+import com.atguigu.lease.web.admin.vo.apartment.ApartmentQueryVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * @author liubo
@@ -11,6 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface ApartmentInfoMapper extends BaseMapper<ApartmentInfo> {
 
+    Page<ApartmentItemVo> customPageQuery(IPage<ApartmentItemVo> page,@Param("queryVo") ApartmentQueryVo queryVo);
 }
 
 
