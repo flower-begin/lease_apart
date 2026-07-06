@@ -1,6 +1,8 @@
 package com.atguigu.lease.web.admin.custom.config;
 
+import com.atguigu.lease.web.admin.custom.converter.StringToBaseEnumConverterFactory;
 import com.atguigu.lease.web.admin.custom.converter.StringToItemTypeConverter;
+import com.atguigu.lease.web.admin.custom.converter.StringToReleaseStatusConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -14,13 +16,18 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     // springMVC的组件需要主动配置到mvc的配置类中才生效
     @Autowired
     private StringToItemTypeConverter stringToItemTypeConverter;
+    //@Autowired
+    //private StringToReleaseStatusConverter stringToReleaseStatusConverter;
 
     @Value("${upload.dir}")
     private String uploadDir;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
+
         registry.addConverter(stringToItemTypeConverter);
+        //registry.addConverter(stringToReleaseStatusConverter);
+        registry.addConverterFactory(new StringToBaseEnumConverterFactory());
     }
 
     /**
