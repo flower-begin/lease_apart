@@ -1,5 +1,6 @@
 package com.atguigu.lease.common.springmvc;
 
+import com.atguigu.lease.common.exception.LeaseException;
 import com.atguigu.lease.common.result.Result;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,5 +16,12 @@ public class GlobalExceptionHandler {
         // 在控制台打印异常信息
         e.printStackTrace();
         return Result.fail();
+    }
+
+    // 处理自定义异常
+    @ExceptionHandler(LeaseException.class)
+    public Result leaseException(LeaseException e) {
+        e.printStackTrace();
+        return Result.build(e.getCode(), e.getMessage());
     }
 }

@@ -1,5 +1,7 @@
 package com.atguigu.lease.web.admin.service.impl;
 
+import com.atguigu.lease.common.exception.LeaseException;
+import com.atguigu.lease.common.result.ResultCodeEnum;
 import com.atguigu.lease.model.entity.*;
 import com.atguigu.lease.model.enums.ItemType;
 import com.atguigu.lease.web.admin.mapper.*;
@@ -154,6 +156,47 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
 
     @Autowired
     private GraphInfoMapper graphInfoMapper;
+
+    @Autowired
+    private RoomInfoService roomInfoService;
+
+    @Override
+    public void coustomRemoveById(Long id) {
+        // 先查询公寓有没有房间，有就返回207
+        LambdaQueryWrapper<RoomInfo> roomInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roomInfoLambdaQueryWrapper.eq(RoomInfo::getApartmentId, id);
+        long count = roomInfoService.count(roomInfoLambdaQueryWrapper);
+        if (count > 0) {
+            // 说明现在要删除的公寓还有人在租
+            // 返回207
+            throw new LeaseException(ResultCodeEnum.DELETE_ERROR);
+        }
+
+        // 先删除公寓信息
+        removeById(id);
+        // 再删除四个关联表的信息
+        // 删除图片要按照item_id,和item_type
+        LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId,id);
+        graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemType, ItemType.APARTMENT);
+        graphInfoService.remove(graphInfoLambdaQueryWrapper);
+
+        // 删除配套
+        LambdaQueryWrapper<ApartmentFacility> apartmentFacilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        apartmentFacilityLambdaQueryWrapper.eq(ApartmentFacility::getApartmentId,id);
+        apartmentFacilityService.remove(apartmentFacilityLambdaQueryWrapper);
+
+        // 删除标签
+        LambdaQueryWrapper<ApartmentLabel> apartmentLabelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        apartmentLabelLambdaQueryWrapper.eq(ApartmentLabel::getApartmentId,id);
+        apartmentLabelService.remove(apartmentLabelLambdaQueryWrapper);
+
+        // 删除杂费
+        LambdaQueryWrapper<ApartmentFeeValue> apartmentFeeValueLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        apartmentFeeValueLambdaQueryWrapper.eq(ApartmentFeeValue::getApartmentId,id);
+        apartmentFeeValueService.remove(apartmentFeeValueLambdaQueryWrapper);
+    }
+
     @Override
     public ApartmentDetailVo customGetById(Long id) {
         // 先根据前端传入的lease_agreement的id对应的公寓详情
