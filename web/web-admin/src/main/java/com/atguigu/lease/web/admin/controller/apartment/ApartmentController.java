@@ -9,6 +9,7 @@ import com.atguigu.lease.web.admin.vo.apartment.ApartmentDetailVo;
 import com.atguigu.lease.web.admin.vo.apartment.ApartmentItemVo;
 import com.atguigu.lease.web.admin.vo.apartment.ApartmentQueryVo;
 import com.atguigu.lease.web.admin.vo.apartment.ApartmentSubmitVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -69,7 +70,12 @@ public class ApartmentController {
     @Operation(summary = "根据区县id查询公寓信息列表")
     @GetMapping("listInfoByDistrictId")
     public Result<List<ApartmentInfo>> listInfoByDistrictId(@RequestParam Long id) {
-        return Result.ok();
+        // 根据区县id查询公寓信息列表
+        LambdaQueryWrapper<ApartmentInfo> apartmentInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        // ApartmentInfo有字段区域id,所以这个接口就是进行单表查询
+        apartmentInfoLambdaQueryWrapper.eq(ApartmentInfo::getDistrictId, id);
+        List<ApartmentInfo> list = apartmentInfoService.list(apartmentInfoLambdaQueryWrapper);
+        return Result.ok(list);
     }
 }
 
