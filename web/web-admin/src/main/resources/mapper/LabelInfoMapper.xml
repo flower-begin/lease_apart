@@ -8,4 +8,9 @@
         select * from label_info where is_deleted = 0 and id in
         (select label_id from apartment_label where apartment_id = #{id} and is_deleted = 0);
     </select>
+
+    <select id="customQueryListByRoomId" resultType="com.atguigu.lease.model.entity.LabelInfo">
+        select * from label_info where is_deleted = 0 and id in
+        (select label_id from room_label where room_id = #{roomId} and is_deleted = 0)
+    </select>
 </mapper>

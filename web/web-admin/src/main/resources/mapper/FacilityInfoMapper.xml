@@ -5,5 +5,11 @@
 <mapper namespace="com.atguigu.lease.web.admin.mapper.FacilityInfoMapper">
     <select id="customQueryList" resultType="com.atguigu.lease.model.entity.FacilityInfo">
         select * from facility_info where is_deleted = 0 and id in
-        (select facility_id from apartment_facility where apartment_id = #{id} and is_deleted = 0);   </select>
+        (select facility_id from apartment_facility where apartment_id = #{id} and is_deleted = 0);
+    </select>
+
+    <select id="customQueryListByRoomId" resultType="com.atguigu.lease.model.entity.FacilityInfo">
+        select * from facility_info where is_deleted = 0 and id in
+        (select facility_id from room_facility where room_id = #{roomId} and is_deleted = 0)
+    </select>
 </mapper>

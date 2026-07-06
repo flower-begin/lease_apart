@@ -19,4 +19,8 @@ public interface RoomInfoService extends IService<RoomInfo> {
     void customSaveOrUpdate(RoomSubmitVo roomSubmitVo);
 
     void customPage(Page<RoomItemVo> page, RoomQueryVo queryVo);
+
+    RoomDetailVo customGetById(Long id);
+
+    void customRemoveById(Long id);
 }

@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atguigu.lease.web.admin.mapper.FeeValueMapper">
 
-    <select id="customQueryList" resultType="com.atguigu.lease.web.admin.vo.fee.FeeValueVo">
+    <select id="customQueryList" resultType="com.atguigu.lease.model.entity.FeeValue">
        select fv.*,fk.name fee_key_name
        from fee_value fv
        join fee_key fk
