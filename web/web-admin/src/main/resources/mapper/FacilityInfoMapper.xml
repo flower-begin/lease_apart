@@ -3,5 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atguigu.lease.web.admin.mapper.FacilityInfoMapper">
-
+    <select id="customQueryList" resultType="com.atguigu.lease.model.entity.FacilityInfo">
+        select * from facility_info where is_deleted = 0 and id in
+        (select facility_id from apartment_facility where apartment_id = #{id} and is_deleted = 0);   </select>
 </mapper>

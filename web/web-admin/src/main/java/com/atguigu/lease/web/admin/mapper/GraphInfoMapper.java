@@ -4,6 +4,7 @@ import com.atguigu.lease.model.entity.GraphInfo;
 import com.atguigu.lease.model.enums.ItemType;
 import com.atguigu.lease.web.admin.vo.graph.GraphVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
 */
 public interface GraphInfoMapper extends BaseMapper<GraphInfo> {
 
+    List<GraphVo> customQueryList(@Param("itemType") ItemType itemType, @Param("id") Long id);
 }
 
 

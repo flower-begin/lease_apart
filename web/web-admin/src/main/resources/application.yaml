@@ -27,3 +27,7 @@ upload:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+#让接口测试工具正确识别参数类型
+springdoc:
+  default-flat-param-object: true

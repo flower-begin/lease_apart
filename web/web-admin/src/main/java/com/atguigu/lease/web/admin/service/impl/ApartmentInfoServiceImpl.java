@@ -2,17 +2,20 @@ package com.atguigu.lease.web.admin.service.impl;
 
 import com.atguigu.lease.model.entity.*;
 import com.atguigu.lease.model.enums.ItemType;
-import com.atguigu.lease.web.admin.mapper.ApartmentInfoMapper;
+import com.atguigu.lease.web.admin.mapper.*;
 import com.atguigu.lease.web.admin.service.*;
+import com.atguigu.lease.web.admin.vo.apartment.ApartmentDetailVo;
 import com.atguigu.lease.web.admin.vo.apartment.ApartmentItemVo;
 import com.atguigu.lease.web.admin.vo.apartment.ApartmentQueryVo;
 import com.atguigu.lease.web.admin.vo.apartment.ApartmentSubmitVo;
+import com.atguigu.lease.web.admin.vo.fee.FeeValueVo;
 import com.atguigu.lease.web.admin.vo.graph.GraphVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -138,6 +141,44 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     @Override
     public void customPage(ApartmentQueryVo queryVo, IPage<ApartmentItemVo> page) {
         Page<ApartmentItemVo> pageResult = apartmentInfoMapper.customPageQuery(page, queryVo);
+    }
+
+    @Autowired
+    private FacilityInfoMapper facilityInfoMapper;
+
+    @Autowired
+    private LabelInfoMapper labelInfoMapper;
+
+    @Autowired
+    private FeeValueMapper feeValueMapper;
+
+    @Autowired
+    private GraphInfoMapper graphInfoMapper;
+    @Override
+    public ApartmentDetailVo customGetById(Long id) {
+        // 先根据前端传入的lease_agreement的id对应的公寓详情
+        ApartmentInfo apartmentInfo = getById(id);
+        // 再根据查询到的公寓id查询配套设施集合
+        List<FacilityInfo> facilityInfos = facilityInfoMapper.customQueryList(id);
+        // 再根据查询到的公寓id查询标签集合
+        List<LabelInfo> labelInfos = labelInfoMapper.customQueryList(id);
+        // 再根据查询到的公寓id查询杂费集合
+        List<FeeValueVo> feeValues = feeValueMapper.customQueryList(id);
+        // 再根据查询到的公寓id查询图片集合
+        List<GraphVo> graphInfos = graphInfoMapper.customQueryList(ItemType.APARTMENT, id);
+
+        // 将集合整合并赋值给vo
+        ApartmentDetailVo apartmentDetailVo = new ApartmentDetailVo();
+        apartmentDetailVo.setFacilityInfoList(facilityInfos);
+        apartmentDetailVo.setLabelInfoList(labelInfos);
+        apartmentDetailVo.setFeeValueVoList(feeValues);
+        apartmentDetailVo.setGraphVoList(graphInfos);
+
+        // 进行对象相同属性赋值
+        // 参数1：提供属性值的对象(源对象)
+        // 参数2：接收属性值的对象(目标对象)
+        BeanUtils.copyProperties(apartmentInfo, apartmentDetailVo);
+        return apartmentDetailVo;
     }
 }
 
