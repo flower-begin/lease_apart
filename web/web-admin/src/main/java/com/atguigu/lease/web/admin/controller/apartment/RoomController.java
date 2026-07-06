@@ -30,6 +30,7 @@ public class RoomController {
     @Operation(summary = "保存或更新房间信息")
     @PostMapping("saveOrUpdate")
     public Result saveOrUpdate(@RequestBody RoomSubmitVo roomSubmitVo) {
+        roomInfoService.customSaveOrUpdate(roomSubmitVo);
         return Result.ok();
     }
 
