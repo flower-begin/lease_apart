@@ -2,7 +2,9 @@ package com.atguigu.lease;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling  // 自动开启定时任务
 @SpringBootApplication
 public class AdminWebApplication {
     public static void main(String[] args) {

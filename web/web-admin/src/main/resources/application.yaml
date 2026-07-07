@@ -1,6 +1,9 @@
 server:
   port: 8080
 spring:
+  jackson:
+    time-zone: GMT+8              # 把时间改到东八区的
+    date-format: yyyy-MM-dd HH:mm:ss    # 日期格式
   servlet:
     multipart:
       max-file-size: 100MB # 设置单个文件最大上传大小
