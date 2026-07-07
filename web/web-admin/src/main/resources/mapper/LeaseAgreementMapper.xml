@@ -4,4 +4,107 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atguigu.lease.web.admin.mapper.LeaseAgreementMapper">
 
+    <resultMap id="lMap" type="com.atguigu.lease.web.admin.vo.agreement.AgreementVo">
+        <id property="id" column="id"/>
+        <association property="apartmentInfo" javaType="com.atguigu.lease.model.entity.ApartmentInfo">
+            <id column="ai_id" property="id"/>
+            <result property="name" column="ai_name"/>
+        </association>
+
+        <association property="roomInfo" javaType="com.atguigu.lease.model.entity.RoomInfo">
+            <id column="ri_id" property="id"/>
+        </association>
+
+        <association property="paymentType" javaType="com.atguigu.lease.model.entity.PaymentType">
+            <id property="id" column="pt_name"/>
+            <result property="name" column="pt_name"/>
+            <result property="additionalInfo" column="pt_additional_info"/>
+        </association>
+
+        <association property="leaseTerm" javaType="com.atguigu.lease.model.entity.LeaseTerm">
+            <id property="id" column="lt_id"/>
+        </association>
+
+    </resultMap>
+
+    <select id="customQueryList" resultMap="lMap">
+        select la.*,
+               ri.id ri_id,
+               ri.room_number,
+               ai.id ai_id ,
+               ai.name ai_name,
+               ai.province_name,
+               ai.city_name,
+               ai.district_name,
+               lt.id lt_id,
+               lt.month_count,
+               lt.unit,
+               pt.id pt_id,
+               pt.name pt_name,
+               pt.pay_month_count,
+               pt.additional_info pt_additional_info
+        from lease_agreement la left join room_info ri
+                                          on la.room_id = ri.id and ri.is_deleted = 0
+            <if test="queryVo.roomNumber != null">
+                and ri.room_number = #{queryVo.roomNumber}
+            </if>
+                                left join apartment_info ai on la.apartment_id = ai.id
+            and ai.is_deleted = 0
+            <if test="queryVo.provinceId != null">
+                and ai.province_id = #{queryVo.provinceId}
+            </if>
+        <if test="queryVo.cityId != null">
+            and ai.city_id = #{queryVo.cityId}
+        </if>
+        <if test="queryVo.districtId != null">
+            and ai.district_id = #{queryVo.districtId}
+        </if>
+                                left join lease_term lt
+                                          on la.lease_term_id = lt.id and lt.is_deleted = 0
+                                left join payment_type pt
+                                          on la.payment_type_id = pt.id and pt.is_deleted = 0
+        where la.is_deleted = 0
+        <if test="queryVo.apartmentId != null">
+            and la.apartment_id = #{queryVo.apartmentId}
+        </if>
+        <if test="queryVo.name != null">
+            and la.name like concat('%','#{queryVo.name}','%')
+        </if>
+
+        <if test="queryVo.phone != null">
+            and la.phone like concat('%','#{phone}','%')
+        </if>
+    </select>
+
+
+    <select id="customQueryListById" resultMap="lMap">
+        select la.*,
+        ri.id ri_id,
+        ri.room_number,
+        ai.id ai_id ,
+        ai.name ai_name,
+        ai.province_name,
+        ai.province_id,
+        ai.city_name,
+        ai.city_id,
+        ai.district_name,
+        ai.district_id,
+        lt.id lt_id,
+        lt.month_count,
+        lt.unit,
+        pt.id pt_id,
+        pt.name pt_name,
+        pt.pay_month_count,
+        pt.additional_info pt_additional_info
+        from lease_agreement la left join room_info ri
+        on la.room_id = ri.id and ri.is_deleted = 0
+        left join apartment_info ai on la.apartment_id = ai.id
+        and ai.is_deleted = 0
+        left join lease_term lt
+        on la.lease_term_id = lt.id and lt.is_deleted = 0
+        left join payment_type pt
+        on la.payment_type_id = pt.id and pt.is_deleted = 0
+        where la.is_deleted = 0 and la.id = #{id};
+
+    </select>
 </mapper>
