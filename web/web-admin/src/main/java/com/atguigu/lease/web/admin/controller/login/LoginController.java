@@ -30,6 +30,9 @@ public class LoginController {
     @Operation(summary = "登录")
     @PostMapping("login")
     public Result<String> login(@RequestBody LoginVo loginVo) {
+        // 前端传入登录信息
+        // 调用业务层对应的方法
+        String token = loginService.login(loginVo);
         return Result.ok();
     }
 

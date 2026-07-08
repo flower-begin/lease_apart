@@ -39,3 +39,9 @@ mybatis-plus:
 #让接口测试工具正确识别参数类型
 springdoc:
   default-flat-param-object: true
+
+#登录和认证的拦截器的拦截和放行地址写死了，可以在yaml文件中进行配置
+web:
+  admin:
+    auth-include: /admin/**
+    auth-exclude: /admin/login/**
