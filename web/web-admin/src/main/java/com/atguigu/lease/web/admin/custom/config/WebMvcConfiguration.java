@@ -55,8 +55,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new LoginInterceptor())
-                .addPathPatterns(includes)    // 拦截地址
-                .excludePathPatterns(excludes)      // 放行地址
+                .addPathPatterns(includes)    // 放行地址
+                .excludePathPatterns(excludes)      // 拦截地址
                 .order(1);
     }
 
