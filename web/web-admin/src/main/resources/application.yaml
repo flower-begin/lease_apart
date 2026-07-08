@@ -21,6 +21,10 @@ spring:
       maximum-pool-size: 12 #连接池最大连接数，默认是10
       minimum-idle: 10 #最小空闲连接数量
       pool-name: SPHHikariPool # 连接池名称
+  data:
+    redis:
+      port: 6379
+      host: localhost
 
 # 本地文件上传存储路径
 upload:
