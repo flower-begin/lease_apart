@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Schema(description = "用户基本信息")
 @Data
-@AllArgsConstructor
 public class UserInfoVo {
 
     @Schema(description = "用户昵称")
@@ -15,4 +14,11 @@ public class UserInfoVo {
     @Schema(description = "用户头像")
     private String avatarUrl;
 
+    public UserInfoVo(String nickname, String avatarUrl) {
+        this.nickname = nickname;
+        this.avatarUrl = avatarUrl;
+    }
+
+    public UserInfoVo() {
+    }
 }

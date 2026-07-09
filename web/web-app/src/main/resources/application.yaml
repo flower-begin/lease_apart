@@ -2,6 +2,10 @@ server:
   port: 8081
 
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:mysql:///lease?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2b8
@@ -21,3 +25,19 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     auto-mapping-behavior: full
+
+# 本地文件上传存储路径
+upload:
+  dir: D:/upload
+
+#阿里云的短信服务
+aliyun:
+  sms:
+    access-key-id: LTAI5t9kNXdg5v3CctbzeUeo
+    access-key-secret: YXEJsy0Xiqcog9haCYhnc1pdyHi4CM
+    endpoint: dysmsapi.aliyuncs.com
+
+web:
+  app:
+    auth-include: /app/**
+    auth-exclude: /app/login/**
