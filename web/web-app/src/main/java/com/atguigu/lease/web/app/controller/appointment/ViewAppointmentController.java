@@ -1,12 +1,16 @@
 package com.atguigu.lease.web.app.controller.appointment;
 
 
+import com.atguigu.lease.common.context.LoginUserContext;
 import com.atguigu.lease.common.result.Result;
 import com.atguigu.lease.model.entity.ViewAppointment;
+import com.atguigu.lease.model.enums.AppointmentStatus;
+import com.atguigu.lease.web.app.service.ViewAppointmentService;
 import com.atguigu.lease.web.app.vo.appointment.AppointmentDetailVo;
 import com.atguigu.lease.web.app.vo.appointment.AppointmentItemVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,24 +20,31 @@ import java.util.List;
 @RequestMapping("/app/appointment")
 public class ViewAppointmentController {
 
+    @Autowired
+    private ViewAppointmentService viewAppointmentService;
+
     @Operation(summary = "保存或更新看房预约")
     @PostMapping("saveOrUpdate")
     public Result saveOrUpdate(@RequestBody ViewAppointment viewAppointment) {
+        Long userId = LoginUserContext.getUserId();
+        viewAppointment.setUserId(userId);
+        viewAppointment.setAppointmentStatus(AppointmentStatus.WAITING);
+        viewAppointmentService.saveOrUpdate(viewAppointment);
         return Result.ok();
     }
 
     @Operation(summary = "查询个人预约看房列表")
     @GetMapping("listItem")
     public Result<List<AppointmentItemVo>> listItem() {
-        return Result.ok();
+        Long userId = LoginUserContext.getUserId();
+        return Result.ok(viewAppointmentService.listByUserId(userId));
     }
-
 
     @GetMapping("getDetailById")
     @Operation(summary = "根据ID查询预约详情信息")
     public Result<AppointmentDetailVo> getDetailById(Long id) {
-        return Result.ok();
+        Long userId = LoginUserContext.getUserId();
+        return Result.ok(viewAppointmentService.getDetailById(id, userId));
     }
 
 }
-

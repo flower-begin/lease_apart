@@ -2,8 +2,11 @@ package com.atguigu.lease.web.app.service.impl;
 
 import com.atguigu.lease.model.entity.BrowsingHistory;
 import com.atguigu.lease.web.app.mapper.BrowsingHistoryMapper;
+import com.atguigu.lease.web.app.mapper.GraphInfoMapper;
 import com.atguigu.lease.web.app.service.BrowsingHistoryService;
+import com.atguigu.lease.web.app.vo.graph.GraphVo;
 import com.atguigu.lease.web.app.vo.history.HistoryItemVo;
+import com.atguigu.lease.model.enums.ItemType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,6 +17,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author liubo
@@ -25,9 +29,23 @@ import java.util.Date;
 public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMapper, BrowsingHistory>
         implements BrowsingHistoryService {
 
+    @Autowired
+    private BrowsingHistoryMapper browsingHistoryMapper;
+
+    @Autowired
+    private GraphInfoMapper graphInfoMapper;
+
+    @Override
+    public Page<HistoryItemVo> pageHistory(Page<HistoryItemVo> page, Long userId) {
+        Page<HistoryItemVo> result = browsingHistoryMapper.pageHistory(page, userId);
+        // Populate room images for each history item
+        if (result.getRecords() != null) {
+            for (HistoryItemVo item : result.getRecords()) {
+                List<GraphVo> graphVoList = graphInfoMapper.customQueryList(ItemType.ROOM, item.getRoomId());
+                item.setRoomGraphVoList(graphVoList);
+            }
+        }
+        return result;
+    }
 
 }
-
-
-
-

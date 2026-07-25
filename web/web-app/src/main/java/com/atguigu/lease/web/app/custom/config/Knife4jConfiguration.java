@@ -58,4 +58,11 @@ public class Knife4jConfiguration {
                 ).
                 build();
     }
+
+    @Bean
+    public GroupedOpenApi aiAPI() {
+        return GroupedOpenApi.builder().group("AI助手").
+                pathsToMatch("/app/ai/**").
+                build();
+    }
 }

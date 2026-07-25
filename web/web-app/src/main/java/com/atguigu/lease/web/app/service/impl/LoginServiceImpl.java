@@ -56,7 +56,7 @@ public class LoginServiceImpl implements LoginService {
     public String login(LoginVo loginVo) {
         // 1.校验验证码
         Object code = redisTemplate.opsForValue().get(RedisConstant.APP_LOGIN_PREFIX + loginVo.getPhone());
-        if (loginVo.getCode().equals(code)) {
+        if (code == null) {
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_CODE_EXPIRED);
         }
         // 将前端传入的验证码与Redis中的验证码进行比较

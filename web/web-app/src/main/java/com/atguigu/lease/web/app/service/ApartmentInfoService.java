@@ -11,4 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ApartmentInfoService extends IService<ApartmentInfo> {
 
+    ApartmentDetailVo getApartmentDetailById(Long id);
+
 }

@@ -1,7 +1,6 @@
 package com.atguigu.lease.web.app.controller.leasaterm;
 
 import com.atguigu.lease.common.result.Result;
-import com.atguigu.lease.model.entity.LeaseAgreement;
 import com.atguigu.lease.model.entity.LeaseTerm;
 import com.atguigu.lease.web.app.service.LeaseTermService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,10 +18,12 @@ import java.util.List;
 @Tag(name = "租期信息")
 public class LeaseTermController {
 
+    @Autowired
+    private LeaseTermService leaseTermService;
 
     @GetMapping("listByRoomId")
     @Operation(summary = "根据房间id获取可选获取租期列表")
     public Result<List<LeaseTerm>> list(@RequestParam Long id) {
-        return Result.ok();
+        return Result.ok(leaseTermService.listByRoomId(id));
     }
 }

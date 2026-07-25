@@ -23,13 +23,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <!-- 如果web-app模块暂时没有启动类，可以跳过repackage -->
-                <executions>
-                    <execution>
-                        <id>repackage</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

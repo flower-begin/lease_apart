@@ -1,6 +1,7 @@
 package com.atguigu.lease.web.app.service;
 
 import com.atguigu.lease.model.entity.LeaseAgreement;
+import com.atguigu.lease.model.enums.LeaseStatus;
 import com.atguigu.lease.web.app.vo.agreement.AgreementDetailVo;
 import com.atguigu.lease.web.app.vo.agreement.AgreementItemVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -13,5 +14,11 @@ import java.util.List;
 * @createDate 2023-07-26 11:12:39
 */
 public interface LeaseAgreementService extends IService<LeaseAgreement> {
+
+    List<AgreementItemVo> listByPhone(String phone);
+
+    AgreementDetailVo getDetailById(Long id, String phone);
+
+    void updateStatusById(Long id, String phone, LeaseStatus leaseStatus);
 
 }

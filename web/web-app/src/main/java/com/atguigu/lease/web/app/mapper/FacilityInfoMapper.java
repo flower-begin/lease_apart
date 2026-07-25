@@ -2,6 +2,7 @@ package com.atguigu.lease.web.app.mapper;
 
 import com.atguigu.lease.model.entity.FacilityInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -12,6 +13,10 @@ import java.util.List;
 * @Entity com.atguigu.lease.model.entity.FacilityInfo
 */
 public interface FacilityInfoMapper extends BaseMapper<FacilityInfo> {
+
+    List<FacilityInfo> customQueryList(@Param("id") Long apartmentId);
+
+    List<FacilityInfo> customQueryListByRoomId(@Param("roomId") Long roomId);
 
 }
 

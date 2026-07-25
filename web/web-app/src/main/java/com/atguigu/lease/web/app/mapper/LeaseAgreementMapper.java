@@ -1,8 +1,10 @@
 package com.atguigu.lease.web.app.mapper;
 
 import com.atguigu.lease.model.entity.LeaseAgreement;
+import com.atguigu.lease.web.app.vo.agreement.AgreementDetailVo;
 import com.atguigu.lease.web.app.vo.agreement.AgreementItemVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -14,6 +16,9 @@ import java.util.List;
 */
 public interface LeaseAgreementMapper extends BaseMapper<LeaseAgreement> {
 
+    List<AgreementItemVo> listByPhone(@Param("phone") String phone);
+
+    AgreementDetailVo getDetailByIdAndPhone(@Param("id") Long id, @Param("phone") String phone);
 
 }
 

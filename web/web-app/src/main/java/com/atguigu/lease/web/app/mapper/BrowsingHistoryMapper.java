@@ -5,6 +5,7 @@ import com.atguigu.lease.web.app.vo.history.HistoryItemVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * @author liubo
@@ -13,6 +14,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 * @Entity com.atguigu.lease.model.entity.BrowsingHistory
 */
 public interface BrowsingHistoryMapper extends BaseMapper<BrowsingHistory> {
+
+    Page<HistoryItemVo> pageHistory(Page<HistoryItemVo> page, @Param("userId") Long userId);
 
 }
 

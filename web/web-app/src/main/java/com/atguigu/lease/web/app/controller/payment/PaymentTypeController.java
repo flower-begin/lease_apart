@@ -19,15 +19,18 @@ import java.util.List;
 @RequestMapping("/app/payment")
 public class PaymentTypeController {
 
+    @Autowired
+    private PaymentTypeService paymentTypeService;
+
     @Operation(summary = "根据房间id获取可选支付方式列表")
     @GetMapping("listByRoomId")
     public Result<List<PaymentType>> list(@RequestParam Long id) {
-        return Result.ok();
+        return Result.ok(paymentTypeService.listByRoomId(id));
     }
 
     @Operation(summary = "获取全部支付方式列表")
     @GetMapping("list")
     public Result<List<PaymentType>> list() {
-        return Result.ok();
+        return Result.ok(paymentTypeService.list());
     }
 }

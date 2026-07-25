@@ -25,6 +25,37 @@ import java.util.List;
 public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, ApartmentInfo>
         implements ApartmentInfoService {
 
+    @Autowired
+    private GraphInfoMapper graphInfoMapper;
+
+    @Autowired
+    private FacilityInfoMapper facilityInfoMapper;
+
+    @Autowired
+    private LabelInfoMapper labelInfoMapper;
+
+    @Autowired
+    private RoomInfoMapper roomInfoMapper;
+
+    @Override
+    public ApartmentDetailVo getApartmentDetailById(Long id) {
+        ApartmentInfo apartmentInfo = getById(id);
+        if (apartmentInfo == null) {
+            return null;
+        }
+
+        List<GraphVo> graphVoList = graphInfoMapper.customQueryList(ItemType.APARTMENT, id);
+        List<FacilityInfo> facilityInfoList = facilityInfoMapper.customQueryList(id);
+        List<LabelInfo> labelInfoList = labelInfoMapper.customQueryList(id);
+
+        ApartmentDetailVo vo = new ApartmentDetailVo();
+        BeanUtils.copyProperties(apartmentInfo, vo);
+        vo.setGraphVoList(graphVoList);
+        vo.setFacilityInfoList(facilityInfoList);
+        vo.setLabelInfoList(labelInfoList);
+
+        return vo;
+    }
 
 }
 

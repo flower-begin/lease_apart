@@ -1,8 +1,10 @@
 package com.atguigu.lease.web.app.mapper;
 
 import com.atguigu.lease.model.entity.ViewAppointment;
+import com.atguigu.lease.web.app.vo.appointment.AppointmentDetailVo;
 import com.atguigu.lease.web.app.vo.appointment.AppointmentItemVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -14,6 +16,9 @@ import java.util.List;
 */
 public interface ViewAppointmentMapper extends BaseMapper<ViewAppointment> {
 
+    List<AppointmentItemVo> listByUserId(@Param("userId") Long userId);
+
+    AppointmentDetailVo getDetailById(@Param("id") Long id, @Param("userId") Long userId);
 
 }
 

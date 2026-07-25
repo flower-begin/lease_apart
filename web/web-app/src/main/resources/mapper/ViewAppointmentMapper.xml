@@ -4,5 +4,26 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atguigu.lease.web.app.mapper.ViewAppointmentMapper">
 
+    <resultMap id="appointmentItemMap" type="com.atguigu.lease.web.app.vo.appointment.AppointmentItemVo">
+        <id property="id" column="id"/>
+        <result property="apartmentName" column="apartment_name"/>
+        <result property="appointmentTime" column="appointment_time"/>
+        <result property="appointmentStatus" column="appointment_status"/>
+    </resultMap>
 
+    <select id="listByUserId" resultMap="appointmentItemMap">
+        select va.id, va.appointment_time, va.appointment_status,
+               ai.name apartment_name
+        from view_appointment va
+        left join apartment_info ai on va.apartment_id = ai.id and ai.is_deleted = 0
+        where va.is_deleted = 0 and va.user_id = #{userId}
+        order by va.create_time desc
+    </select>
+
+    <select id="getDetailById" resultType="com.atguigu.lease.web.app.vo.appointment.AppointmentDetailVo">
+        select va.*, ai.name apartment_name
+        from view_appointment va
+        left join apartment_info ai on va.apartment_id = ai.id and ai.is_deleted = 0
+        where va.is_deleted = 0 and va.id = #{id} and va.user_id = #{userId}
+    </select>
 </mapper>
