@@ -49,3 +49,4 @@ deepseek:
     key: ${DEEPSEEK_API_KEY:sk-ade2e6219a50477bbf85d4ac84344f41}
     url: https://api.deepseek.com/v1/chat/completions
     model: deepseek-chat
+
