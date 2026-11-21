@@ -34,7 +34,7 @@ public class LoginController {
     }
 
     @PostMapping("login")
-    @Operation(summary = "登录")
+    @Operation(summary = "登录（账号密码 / 短信验证码，移动端默认用账号密码）")
     public Result<String> login(@RequestBody LoginVo loginVo) {
         String token = loginService.login(loginVo);
         return Result.ok(token);

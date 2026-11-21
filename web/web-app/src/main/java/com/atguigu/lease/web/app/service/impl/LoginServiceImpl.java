@@ -8,6 +8,7 @@ import com.atguigu.lease.common.constants.RedisConstant;
 import com.atguigu.lease.common.exception.LeaseException;
 import com.atguigu.lease.common.result.ResultCodeEnum;
 import com.atguigu.lease.common.utils.JwtUtil;
+import com.atguigu.lease.common.utils.Md5Util;
 import com.atguigu.lease.model.entity.UserInfo;
 import com.atguigu.lease.model.enums.BaseStatus;
 import com.atguigu.lease.web.app.service.LoginService;
@@ -103,16 +104,62 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
+    /**
+     * 登录入口，支持两种方式，按传参自动区分：
+     * <p>
+     * 1. 账号密码登录（移动端默认）：传 {@code phone + password}
+     * 2. 短信验证码登录（保留兼容）：传 {@code phone + code}
+     * <p>
+     * 两者都传时以密码为准。
+     */
     @Override
     public String login(LoginVo loginVo) {
         if (loginVo == null || !StringUtils.hasText(loginVo.getPhone())) {
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_PHONE_EMPTY);
         }
-        if (!StringUtils.hasText(loginVo.getCode())) {
-            throw new LeaseException(ResultCodeEnum.APP_LOGIN_CODE_EMPTY);
-        }
         if (!PHONE_PATTERN.matcher(loginVo.getPhone()).matches()) {
             throw new LeaseException("手机号格式不正确", ResultCodeEnum.PARAM_ERROR.getCode());
+        }
+
+        if (StringUtils.hasText(loginVo.getPassword())) {
+            return loginByPassword(loginVo);
+        }
+        return loginBySms(loginVo);
+    }
+
+    /**
+     * 账号（手机号）+ 密码登录。密码在库里存的是 MD5，这里同样用 MD5 比对。
+     * 不走自动注册：密码登录必须账号已存在。
+     */
+    private String loginByPassword(LoginVo loginVo) {
+        LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserInfo::getPhone, loginVo.getPhone());
+        UserInfo userInfo = userInfoService.getOne(wrapper);
+
+        // 用户不存在 / 没设过密码，统一提示，避免暴露手机号是否注册过
+        if (userInfo == null || !StringUtils.hasText(userInfo.getPassword())) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_ACCOUNT_ERROR);
+        }
+
+        String encoded = Md5Util.md5Hex(loginVo.getPassword());
+        if (!encoded.equalsIgnoreCase(userInfo.getPassword())) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_ACCOUNT_ERROR);
+        }
+
+        if (userInfo.getStatus() != BaseStatus.ENABLE) {
+            throw new LeaseException(ResultCodeEnum.APP_ACCOUNT_DISABLED_ERROR);
+        }
+
+        log.info("用户 {} 使用账号密码登录成功", loginVo.getPhone());
+        return JwtUtil.createToken(userInfo.getId(), userInfo.getPhone());
+    }
+
+    /**
+     * 短信验证码登录（保留）。第一次用某个手机号登录会自动注册。
+     */
+    private String loginBySms(LoginVo loginVo) {
+        if (!StringUtils.hasText(loginVo.getCode())) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_CODE_EMPTY);
         }
         String cacheKey = RedisConstant.APP_LOGIN_PREFIX + loginVo.getPhone();
 

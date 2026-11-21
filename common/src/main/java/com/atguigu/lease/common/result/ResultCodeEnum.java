@@ -36,6 +36,8 @@ public enum ResultCodeEnum {
     APP_LOGIN_CODE_EXPIRED(505, "验证码已过期"),
     APP_LOGIN_CODE_ERROR(506, "验证码错误"),
     APP_ACCOUNT_DISABLED_ERROR(507, "该用户已被禁用"),
+    APP_LOGIN_PASSWORD_EMPTY(508, "密码为空"),
+    APP_LOGIN_ACCOUNT_ERROR(509, "手机号或密码错误"),
 
 
     TOKEN_EXPIRED(601, "token过期"),
