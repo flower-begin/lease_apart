@@ -1,0 +1,81 @@
+@import './variables.less';
+@import "textStyle";
+
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+  color: var(--van-text-color);
+  background-color: var(--color-background-2);
+  font-size: 14px;
+}
+
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#app {
+  height: 100%;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+.main-container{
+  padding:0 20px;
+  /* 原来是 100vw：vw 只认视口宽度，桌面宽屏下会撑满整个窗口并溢出
+     改成 100% + border-box，让宽度跟随父级（桌面下就是居中的 420 栏） */
+  width: 100%;
+  box-sizing: border-box;
+}
+.comment-padding{
+  padding: 0 20px;
+}
+.card{
+  position: relative;
+  box-sizing: border-box;
+  padding: var(--van-card-padding);
+  color: var(--van-card-text-color);
+  background: var(--van-card-background);
+  border-radius: 10px;
+  margin: 10px;
+}
+.page-container{
+  background-color: var(--color-block-background);
+}
+/* 定义 覆盖vant样式 —— 奶油原木风
+   60% 主色：米白 #F9F7F2 / 暖白 #FFFDFA
+   30% 辅助色：奶茶 #E6D5C3 / 浅木 #D4B895
+   10% 点缀色：陶土橙 #E07A5F / 沙金 #F2CC8F */
+:root:root {
+  /* 10% 点缀色：陶土橙 */
+  --van-primary-color: #e07a5f;
+  --van-button-primary-background: #e07a5f;
+  --van-button-primary-border-color: #e07a5f;
+  --van-tabbar-item-active-color: #e07a5f;
+  --van-nav-bar-icon-color: #3d3733;
+
+  /* 文字：暖灰，不用纯黑 */
+  --van-text-color: #3d3733;
+  --van-text-color-2: #6b615a;
+  --van-text-color-3: #9c928a;
+
+  /* 60% 主色：米白底 + 暖白卡片 */
+  --van-background: #f9f7f2;
+  --van-background-2: #fffdfa;
+
+  /* 30% 辅助色：奶茶色描边 */
+  --van-border-color: #eadfd2;
+  --van-active-color: #f3e7db;
+
+  /* 价格 / 危险色用陶土橙的深一档，避免和背景撞 */
+  --van-danger-color: #c9654c;
+}
+

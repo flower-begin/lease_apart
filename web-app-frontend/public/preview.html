@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>归心寓 H5 · 桌面预览</title>
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        height: 100%;
+        margin: 0;
+        background: radial-gradient(circle at 50% 0%, #2b3444 0%, #171b23 70%);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+        overflow: hidden;
+      }
+
+      .wrap {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        padding: 20px;
+      }
+
+      /* 375 x 812 = iPhone X 的逻辑尺寸，正好等于设计稿宽度，
+         这样 iframe 内部的 1vw = 3.75px，vw 适配才是准确的 */
+      .phone {
+        flex-shrink: 0;
+        width: 395px;
+        height: 832px;
+        padding: 10px;
+        border-radius: 44px;
+        background: #0b0e14;
+        box-shadow: 0 0 0 2px #2c3444, 0 30px 70px rgb(0 0 0 / 55%);
+        transform-origin: center center;
+      }
+
+      .phone iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: 34px;
+        background: #fff;
+        display: block;
+      }
+
+      .tips {
+        max-width: 330px;
+        color: #98a2b3;
+        font-size: 13px;
+        line-height: 2;
+      }
+
+      .tips h1 {
+        margin: 0 0 14px;
+        font-size: 17px;
+        color: #e6e9ef;
+        font-weight: 600;
+      }
+
+      .tips code {
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: #262e3c;
+        color: #7fc4ff;
+        font-size: 12px;
+      }
+
+      .tips b { color: #cfd6e4; font-weight: 600; }
+
+      .tips .small { color: #6b7686; font-size: 12px; }
+
+      @media (max-width: 900px) {
+        .tips { display: none; }
+        .wrap { gap: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="phone" id="phone">
+        <!-- 用 iframe 把应用装进 375px 宽的视口，vw 单位才会按设计稿解析 -->
+        <iframe src="/" title="归心寓 H5"></iframe>
+      </div>
+
+      <div class="tips">
+        <h1>桌面预览（手机尺寸）</h1>
+        <p>
+          这个页面把应用装进一个 <b>375 × 812</b> 的 iframe 里，
+          所以 <b>vw 适配是准确的</b>，看起来和真机一致。
+        </p>
+        <p>
+          建议再开一个窗口看 <code>/preview.html</code> 本身，直接用
+          <code>/</code> 的话在宽屏浏览器里会被整体放大（375 设计稿 × 窗口宽度/375）。
+        </p>
+        <p>
+          想调其他尺寸？F12 → <code>Ctrl+Shift+M</code> 切到设备模拟，
+          选 iPhone 12 / Pixel 5 就行。
+        </p>
+        <p class="small">
+          手机真机访问时不需要这个页面，直接开 <code>/</code> 即可。
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // 窗口太矮 / 太窄时，整体等比缩小，保证手机框完整可见
+      (function () {
+        var phone = document.getElementById('phone');
+        var BASE_W = 395;
+        var BASE_H = 832;
+
+        function fit() {
+          var availableW = window.innerWidth - (window.innerWidth > 900 ? 420 : 40);
+          var availableH = window.innerHeight - 40;
+          var scale = Math.min(1, availableW / BASE_W, availableH / BASE_H);
+          if (!isFinite(scale) || scale <= 0) scale = 1;
+          phone.style.transform = 'scale(' + scale + ')';
+        }
+
+        window.addEventListener('resize', fit);
+        fit();
+      })();
+    </script>
+  </body>
+</html>

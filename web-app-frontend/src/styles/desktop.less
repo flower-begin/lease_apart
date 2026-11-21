@@ -1,0 +1,94 @@
+/* =============================================================================
+ *  桌面浏览器预览适配
+ *
+ *  背景：这套页面按 375px 移动端设计稿编写。关掉 vw 适配后（见 postcss.config.js），
+ *  所有尺寸都是固定的 px，于是：
+ *    - 手机上：正常
+ *    - 桌面宽窗口：会撑满整个浏览器宽度，看起来很"散"
+ *
+ *  这里在宽于 560px 的窗口里，把整页收成一个 **居中的手机宽度栏**（420px），
+ *  并给 Vant 的 fixed 组件（tabbar / nav-bar / popup）做同样宽度的约束，
+ *  这样在桌面上看到的就是一个正常大小的手机页面。
+ * ========================================================================== */
+
+/* 桌面端两侧留白底色 */
+html {
+  background-color: #e9ebee;
+}
+
+@media (min-width: 560px) {
+  html,
+  body {
+    height: 100%;
+  }
+
+  /* 让滚动条两侧都留槽位，避免竖向滚动条把居中栏推偏，
+     进而造成 fixed 的 tabbar 与内容错开几个像素 */
+  html {
+    scrollbar-gutter: stable both-edges;
+  }
+
+  /* 把整个 app 收成居中的一栏
+     （用 html body / html #app 提高优先级，确保压过 index.html 里内联的
+       body { margin: 0; width: 100% } / #app { width: 100% }） */
+  html body {
+    max-width: 420px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+    background-color: var(--color-background-2, #fff);
+    box-shadow: 0 0 34px rgba(0, 0, 0, 0.13);
+  }
+
+  html #app {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* -------- Vant 的 position: fixed 组件默认铺满整个窗口，这里收进中间那栏 -------- */
+
+  /* 底部 tabbar */
+  .van-tabbar--fixed {
+    left: 50% !important;
+    right: auto !important;
+    width: 420px !important;
+    max-width: 100vw;
+    margin-left: -210px;
+  }
+
+  /* 顶部导航 */
+  .van-nav-bar--fixed {
+    left: 50% !important;
+    right: auto !important;
+    width: 420px !important;
+    max-width: 100vw;
+    margin-left: -210px;
+  }
+
+  /* 上下弹出的筛选面板 */
+  .van-popup--bottom,
+  .van-popup--top {
+    left: 50% !important;
+    right: auto !important;
+    width: 420px !important;
+    max-width: 100vw;
+    margin-left: -210px;
+  }
+
+  /* 左右抽屉 */
+  .van-popup--left,
+  .van-popup--right {
+    width: 300px !important;
+  }
+
+  /* tabbar / nav-bar 的占位块跟着限宽，避免页面底部、顶部多出空白 */
+  .van-tabbar--placeholder,
+  .van-tabbar__placeholder,
+  .van-nav-bar--placeholder,
+  .van-nav-bar__placeholder {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+
+/* 窄屏（真机 / 窄窗口）：什么都不做，保持全宽 */

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="归心寓">
+  <title>归心寓 · GUIXINYU</title>
+
+  <!-- ==================== 外圈 ==================== -->
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#C98B6B" stroke-width="4.5"/>
+  <circle cx="100" cy="100" r="81" fill="none" stroke="#C98B6B" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- ==================== 心形 + 星芒 ==================== -->
+  <path
+    d="M100 73
+       C100 73 73 54 73 41.5
+       C73 31 81.5 24.5 89.5 28.8
+       C95 31.8 100 38 100 38
+       C100 38 105 31.8 110.5 28.8
+       C118.5 24.5 127 31 127 41.5
+       C127 54 100 73 100 73 Z"
+    fill="#B5714F"/>
+  <path d="M100 40 L103.6 45.4 L109 49 L103.6 52.6 L100 58 L96.4 52.6 L91 49 L96.4 45.4 Z"
+        fill="#F9F1E2"/>
+
+  <!-- ==================== 两枚小星 ==================== -->
+  <path d="M52 56 L54.2 60.8 L59 63 L54.2 65.2 L52 70 L49.8 65.2 L45 63 L49.8 60.8 Z"
+        fill="#C98B6B"/>
+  <path d="M148 56 L150.2 60.8 L155 63 L150.2 65.2 L148 70 L145.8 65.2 L141 63 L145.8 60.8 Z"
+        fill="#C98B6B"/>
+
+  <!-- ==================== 屋顶 + 烟囱 + 炊烟 ==================== -->
+  <rect x="75" y="83" width="9" height="18" rx="1" fill="#7A4A2E"/>
+  <rect x="116" y="83" width="9" height="18" rx="1" fill="#7A4A2E"/>
+
+  <g fill="#EFE7DA">
+    <circle cx="79.5" cy="76" r="4.2"/>
+    <circle cx="85" cy="69.5" r="3.2"/>
+    <circle cx="120.5" cy="74" r="4.6"/>
+    <circle cx="126" cy="67" r="3.4"/>
+  </g>
+
+  <path d="M100 70 L146 104 L139 110.5 L100 83.5 L61 110.5 L54 104 Z" fill="#7A4A2E"/>
+
+  <!-- ==================== 房身 ==================== -->
+  <path d="M70 102 H130 V142 H70 Z" fill="#C0855A"/>
+
+  <!-- 门 -->
+  <path d="M92.5 142 V123.5 A7.5 7.5 0 0 1 107.5 123.5 V142 Z" fill="#6B4025"/>
+  <circle cx="104.2" cy="131" r="1.7" fill="#D9A46F"/>
+
+  <!-- 左窗（四格） -->
+  <g fill="#F7E7B0">
+    <rect x="77" y="107" width="5.4" height="5.4" rx="0.6"/>
+    <rect x="83.4" y="107" width="5.4" height="5.4" rx="0.6"/>
+    <rect x="77" y="113.4" width="5.4" height="5.4" rx="0.6"/>
+    <rect x="83.4" y="113.4" width="5.4" height="5.4" rx="0.6"/>
+  </g>
+
+  <!-- 右窗（四格） -->
+  <g fill="#F7E7B0">
+    <rect x="112" y="115" width="5.4" height="5.4" rx="0.6"/>
+    <rect x="118.4" y="115" width="5.4" height="5.4" rx="0.6"/>
+    <rect x="112" y="121.4" width="5.4" height="5.4" rx="0.6"/>
+    <rect x="118.4" y="121.4" width="5.4" height="5.4" rx="0.6"/>
+  </g>
+
+  <!-- 地面浅影 -->
+  <ellipse cx="100" cy="144.5" rx="34" ry="3" fill="#E3D8C8" opacity="0.65"/>
+
+  <!-- ==================== 橄榄枝（右） ==================== -->
+  <g fill="#8E9A7A">
+    <path d="M129 166 C136 156 143 146 150 133" stroke="#8E9A7A" stroke-width="2.2" fill="none"
+          stroke-linecap="round" opacity="0.85"/>
+    <ellipse cx="134" cy="159" rx="9" ry="4.4" transform="rotate(-28 134 159)"/>
+    <ellipse cx="141" cy="152" rx="9" ry="4.4" transform="rotate(-44 141 152)"/>
+    <ellipse cx="147" cy="144" rx="8.2" ry="4" transform="rotate(-58 147 144)"/>
+    <ellipse cx="151" cy="135" rx="7" ry="3.4" transform="rotate(-70 151 135)"/>
+    <ellipse cx="128" cy="152" rx="8.4" ry="4.2" transform="rotate(12 128 152)"/>
+    <ellipse cx="134" cy="144" rx="8.2" ry="4" transform="rotate(-6 134 144)"/>
+    <ellipse cx="140" cy="136" rx="7.2" ry="3.6" transform="rotate(-22 140 136)"/>
+  </g>
+
+  <!-- ==================== 橄榄枝（左，镜像） ==================== -->
+  <g transform="translate(200 0) scale(-1 1)" fill="#8E9A7A">
+    <path d="M129 166 C136 156 143 146 150 133" stroke="#8E9A7A" stroke-width="2.2" fill="none"
+          stroke-linecap="round" opacity="0.85"/>
+    <ellipse cx="134" cy="159" rx="9" ry="4.4" transform="rotate(-28 134 159)"/>
+    <ellipse cx="141" cy="152" rx="9" ry="4.4" transform="rotate(-44 141 152)"/>
+    <ellipse cx="147" cy="144" rx="8.2" ry="4" transform="rotate(-58 147 144)"/>
+    <ellipse cx="151" cy="135" rx="7" ry="3.4" transform="rotate(-70 151 135)"/>
+    <ellipse cx="128" cy="152" rx="8.4" ry="4.2" transform="rotate(12 128 152)"/>
+    <ellipse cx="134" cy="144" rx="8.2" ry="4" transform="rotate(-6 134 144)"/>
+    <ellipse cx="140" cy="136" rx="7.2" ry="3.6" transform="rotate(-22 140 136)"/>
+  </g>
+
+  <!-- ==================== 底部点缀 ==================== -->
+  <g fill="#C98B6B">
+    <circle cx="85" cy="171" r="1.7"/>
+    <circle cx="92.5" cy="171" r="1.2"/>
+    <rect x="98.5" y="170" width="11" height="2" rx="1"/>
+    <circle cx="115.5" cy="171" r="1.2"/>
+    <circle cx="123" cy="171" r="1.7"/>
+  </g>
+</svg>
