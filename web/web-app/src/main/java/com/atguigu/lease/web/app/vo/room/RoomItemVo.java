@@ -33,4 +33,7 @@ public class RoomItemVo {
     @Schema(description = "房间所属公寓信息")
     private ApartmentInfo apartmentInfo;
 
+    @Schema(description = "房间是否已被租出")
+    private Boolean isCheckIn;
+
 }

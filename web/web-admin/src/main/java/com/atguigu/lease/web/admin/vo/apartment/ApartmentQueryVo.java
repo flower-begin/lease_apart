@@ -15,4 +15,7 @@ public class ApartmentQueryVo {
 
     @Schema(description = "区域id")
     private Long districtId;
+
+    @Schema(description = "公寓名称，模糊匹配")
+    private String name;
 }

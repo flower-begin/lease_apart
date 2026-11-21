@@ -6,105 +6,133 @@
 
     <resultMap id="lMap" type="com.atguigu.lease.web.admin.vo.agreement.AgreementVo">
         <id property="id" column="id"/>
+        <result property="phone" column="phone"/>
+        <result property="name" column="name"/>
+        <result property="identificationNumber" column="identification_number"/>
+        <result property="apartmentId" column="apartment_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="leaseStartDate" column="lease_start_date"/>
+        <result property="leaseEndDate" column="lease_end_date"/>
+        <result property="leaseTermId" column="lease_term_id"/>
+        <result property="rent" column="rent"/>
+        <result property="deposit" column="deposit"/>
+        <result property="paymentTypeId" column="payment_type_id"/>
+        <result property="status" column="status"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="additionalInfo" column="additional_info"/>
+
         <association property="apartmentInfo" javaType="com.atguigu.lease.model.entity.ApartmentInfo">
-            <id column="ai_id" property="id"/>
+            <id property="id" column="ai_id"/>
             <result property="name" column="ai_name"/>
+            <result property="provinceId" column="ai_province_id"/>
+            <result property="provinceName" column="ai_province_name"/>
+            <result property="cityId" column="ai_city_id"/>
+            <result property="cityName" column="ai_city_name"/>
+            <result property="districtId" column="ai_district_id"/>
+            <result property="districtName" column="ai_district_name"/>
+            <result property="addressDetail" column="ai_address_detail"/>
         </association>
 
         <association property="roomInfo" javaType="com.atguigu.lease.model.entity.RoomInfo">
-            <id column="ri_id" property="id"/>
+            <id property="id" column="ri_id"/>
+            <result property="roomNumber" column="ri_room_number"/>
+            <result property="rent" column="ri_rent"/>
+            <result property="apartmentId" column="ri_apartment_id"/>
         </association>
 
         <association property="paymentType" javaType="com.atguigu.lease.model.entity.PaymentType">
-            <id property="id" column="pt_name"/>
+            <id property="id" column="pt_id"/>
             <result property="name" column="pt_name"/>
+            <result property="payMonthCount" column="pt_pay_month_count"/>
             <result property="additionalInfo" column="pt_additional_info"/>
         </association>
 
         <association property="leaseTerm" javaType="com.atguigu.lease.model.entity.LeaseTerm">
             <id property="id" column="lt_id"/>
+            <result property="monthCount" column="lt_month_count"/>
+            <result property="unit" column="lt_unit"/>
         </association>
-
     </resultMap>
 
+    <sql id="baseColumns">
+        la.id,
+        la.phone,
+        la.name,
+        la.identification_number,
+        la.apartment_id,
+        la.room_id,
+        la.lease_start_date,
+        la.lease_end_date,
+        la.lease_term_id,
+        la.rent,
+        la.deposit,
+        la.payment_type_id,
+        la.status,
+        la.source_type,
+        la.additional_info,
+        ri.id              ri_id,
+        ri.room_number     ri_room_number,
+        ri.rent            ri_rent,
+        ri.apartment_id    ri_apartment_id,
+        ai.id              ai_id,
+        ai.name            ai_name,
+        ai.province_id     ai_province_id,
+        ai.province_name   ai_province_name,
+        ai.city_id         ai_city_id,
+        ai.city_name       ai_city_name,
+        ai.district_id     ai_district_id,
+        ai.district_name   ai_district_name,
+        ai.address_detail  ai_address_detail,
+        lt.id              lt_id,
+        lt.month_count     lt_month_count,
+        lt.unit            lt_unit,
+        pt.id              pt_id,
+        pt.name            pt_name,
+        pt.pay_month_count pt_pay_month_count,
+        pt.additional_info pt_additional_info
+    </sql>
+
+    <sql id="baseJoins">
+        from lease_agreement la
+                 left join room_info ri on la.room_id = ri.id and ri.is_deleted = 0
+                 left join apartment_info ai on la.apartment_id = ai.id and ai.is_deleted = 0
+                 left join lease_term lt on la.lease_term_id = lt.id and lt.is_deleted = 0
+                 left join payment_type pt on la.payment_type_id = pt.id and pt.is_deleted = 0
+    </sql>
+
     <select id="customQueryList" resultMap="lMap">
-        select la.*,
-               ri.id ri_id,
-               ri.room_number,
-               ai.id ai_id ,
-               ai.name ai_name,
-               ai.province_name,
-               ai.city_name,
-               ai.district_name,
-               lt.id lt_id,
-               lt.month_count,
-               lt.unit,
-               pt.id pt_id,
-               pt.name pt_name,
-               pt.pay_month_count,
-               pt.additional_info pt_additional_info
-        from lease_agreement la left join room_info ri
-                                          on la.room_id = ri.id and ri.is_deleted = 0
-            <if test="queryVo.roomNumber != null">
-                and ri.room_number = #{queryVo.roomNumber}
-            </if>
-                                left join apartment_info ai on la.apartment_id = ai.id
-            and ai.is_deleted = 0
-            <if test="queryVo.provinceId != null">
-                and ai.province_id = #{queryVo.provinceId}
-            </if>
+        select
+        <include refid="baseColumns"/>
+        <include refid="baseJoins"/>
+        where la.is_deleted = 0
+        <if test="queryVo.apartmentId != null">
+            and la.apartment_id = #{queryVo.apartmentId}
+        </if>
+        <if test="queryVo.provinceId != null">
+            and ai.province_id = #{queryVo.provinceId}
+        </if>
         <if test="queryVo.cityId != null">
             and ai.city_id = #{queryVo.cityId}
         </if>
         <if test="queryVo.districtId != null">
             and ai.district_id = #{queryVo.districtId}
         </if>
-                                left join lease_term lt
-                                          on la.lease_term_id = lt.id and lt.is_deleted = 0
-                                left join payment_type pt
-                                          on la.payment_type_id = pt.id and pt.is_deleted = 0
-        where la.is_deleted = 0
-        <if test="queryVo.apartmentId != null">
-            and la.apartment_id = #{queryVo.apartmentId}
+        <if test="queryVo.roomNumber != null and queryVo.roomNumber != ''">
+            and ri.room_number like concat('%', #{queryVo.roomNumber}, '%')
         </if>
-        <if test="queryVo.name != null">
-            and la.name like concat('%','#{queryVo.name}','%')
+        <if test="queryVo.name != null and queryVo.name != ''">
+            and la.name like concat('%', #{queryVo.name}, '%')
         </if>
-
-        <if test="queryVo.phone != null">
-            and la.phone like concat('%','#{phone}','%')
+        <if test="queryVo.phone != null and queryVo.phone != ''">
+            and la.phone like concat('%', #{queryVo.phone}, '%')
         </if>
+        order by la.id desc
     </select>
 
-
     <select id="customQueryListById" resultMap="lMap">
-        select la.*,
-        ri.id ri_id,
-        ri.room_number,
-        ai.id ai_id ,
-        ai.name ai_name,
-        ai.province_name,
-        ai.province_id,
-        ai.city_name,
-        ai.city_id,
-        ai.district_name,
-        ai.district_id,
-        lt.id lt_id,
-        lt.month_count,
-        lt.unit,
-        pt.id pt_id,
-        pt.name pt_name,
-        pt.pay_month_count,
-        pt.additional_info pt_additional_info
-        from lease_agreement la left join room_info ri
-        on la.room_id = ri.id and ri.is_deleted = 0
-        left join apartment_info ai on la.apartment_id = ai.id
-        and ai.is_deleted = 0
-        left join lease_term lt
-        on la.lease_term_id = lt.id and lt.is_deleted = 0
-        left join payment_type pt
-        on la.payment_type_id = pt.id and pt.is_deleted = 0
-        where la.is_deleted = 0 and la.id = #{id};
-
+        select
+        <include refid="baseColumns"/>
+        <include refid="baseJoins"/>
+        where la.is_deleted = 0 and la.id = #{id}
     </select>
 </mapper>

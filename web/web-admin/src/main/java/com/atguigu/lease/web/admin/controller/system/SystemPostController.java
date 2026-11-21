@@ -27,12 +27,16 @@ public class SystemPostController {
 
     @Operation(summary = "分页获取岗位信息")
     @GetMapping("page")
-    private Result<IPage<SystemPost>> page(@RequestParam long current, @RequestParam long size) {
+    public Result<IPage<SystemPost>> page(@RequestParam long current,
+                                          @RequestParam long size,
+                                          @RequestParam(required = false) String name) {
         IPage<SystemPost> page = new Page<>(current, size);
-        // 由于没有传入查询条件
-        // 所以不需要写LambdaQueryWrapper添加条件了
-        // 直接调用mybatis-plus自带的单表分页查询
-        systemPostService.page(page);
+        LambdaQueryWrapper<SystemPost> wrapper = new LambdaQueryWrapper<>();
+        if (name != null && !name.isBlank()) {
+            wrapper.like(SystemPost::getName, name);
+        }
+        wrapper.orderByDesc(SystemPost::getId);
+        systemPostService.page(page, wrapper);
         return Result.ok(page);
     }
 
@@ -53,10 +57,7 @@ public class SystemPostController {
     @GetMapping("getById")
     @Operation(summary = "根据id获取岗位信息")
     public Result<SystemPost> getById(@RequestParam Long id) {
-        LambdaQueryWrapper<SystemPost> systemPostLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        systemPostLambdaQueryWrapper.eq(SystemPost::getId, id);
-        SystemPost postPost = systemPostService.getById(id);
-        return Result.ok(postPost);
+        return Result.ok(systemPostService.getById(id));
     }
 
     @Operation(summary = "获取全部岗位列表")

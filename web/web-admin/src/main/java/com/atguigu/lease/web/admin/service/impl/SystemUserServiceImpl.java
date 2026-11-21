@@ -21,17 +21,22 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
 
     @Autowired
     private SystemUserMapper systemUserMapper;
+
     @Override
     public void customPage(IPage<SystemUserItemVo> page, SystemUserQueryVo queryVo) {
         systemUserMapper.customPage(page, queryVo);
+        // 列表不返回密码
+        if (page.getRecords() != null) {
+            page.getRecords().forEach(user -> user.setPassword(null));
+        }
     }
 
     @Override
     public SystemUserItemVo customGetById(Long id) {
-        return systemUserMapper.customGetById(id);
+        SystemUserItemVo user = systemUserMapper.customGetById(id);
+        if (user != null) {
+            user.setPassword(null);
+        }
+        return user;
     }
 }
-
-
-
-

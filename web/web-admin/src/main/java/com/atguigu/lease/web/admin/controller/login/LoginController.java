@@ -1,7 +1,9 @@
 package com.atguigu.lease.web.admin.controller.login;
 
 
+import com.atguigu.lease.common.exception.LeaseException;
 import com.atguigu.lease.common.result.Result;
+import com.atguigu.lease.common.result.ResultCodeEnum;
 import com.atguigu.lease.common.utils.JwtUtil;
 import com.atguigu.lease.model.entity.SystemUser;
 import com.atguigu.lease.web.admin.service.LoginService;
@@ -29,7 +31,6 @@ public class LoginController {
     @Operation(summary = "获取图形验证码")
     @GetMapping("login/captcha")
     public Result<CaptchaVo> getCaptcha() {
-        // 获取验证码
         CaptchaVo captchaVo = loginService.getCaptcha();
         return Result.ok(captchaVo);
     }
@@ -37,26 +38,27 @@ public class LoginController {
     @Operation(summary = "登录")
     @PostMapping("login")
     public Result<String> login(@RequestBody LoginVo loginVo) {
-        // 前端传入登录信息
-        // 调用业务层对应的方法
         String token = loginService.login(loginVo);
-        return Result.ok();
+        // 必须把 token 返回给前端，否则前端拿不到登录态
+        return Result.ok(token);
     }
 
     @Operation(summary = "获取登陆用户个人信息")
     @GetMapping("info")
-    // 前端需要传入请求头
     public Result<SystemUserInfoVo> info(@RequestHeader("access_token") String token) {
-        // 返回的vo只要用户的头像和名字
-        // 用前端传入的请求头解析
         Claims claims = JwtUtil.parseToken(token);
-        // 用解析返回的对象拿到userId
-        Long userId = Long.valueOf(claims.get("userId") + "");
+        Object userIdClaim = claims.get("userId");
+        if (userIdClaim == null) {
+            throw new LeaseException(ResultCodeEnum.ADMIN_LOGIN_AUTH);
+        }
+        Long userId = Long.valueOf(String.valueOf(userIdClaim));
         SystemUser systemUser = systemUserService.getById(userId);
-        // 创建SystemUserInfoVo
+        if (systemUser == null) {
+            throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
+        }
         SystemUserInfoVo systemUserInfoVo = new SystemUserInfoVo();
         systemUserInfoVo.setName(systemUser.getName());
         systemUserInfoVo.setAvatarUrl(systemUser.getAvatarUrl());
-        return Result.ok();
+        return Result.ok(systemUserInfoVo);
     }
 }

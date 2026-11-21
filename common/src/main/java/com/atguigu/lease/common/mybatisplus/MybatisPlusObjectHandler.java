@@ -22,6 +22,6 @@ public class MybatisPlusObjectHandler implements MetaObjectHandler {
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "updateTime", Date.class, new Date());
+        this.strictUpdateFill(metaObject, "updateTime", Date.class, new Date());
     }
 }

@@ -56,6 +56,13 @@
                 where payment_type_id = #{queryVo.paymentTypeId} and is_deleted = 0
             )
         </if>
+        <if test="queryVo.keyword != null and queryVo.keyword != ''">
+            and (
+                ri.room_number like concat('%', #{queryVo.keyword}, '%')
+                or ai.name like concat('%', #{queryVo.keyword}, '%')
+                or ai.address_detail like concat('%', #{queryVo.keyword}, '%')
+            )
+        </if>
         <choose>
             <when test="queryVo.orderType == 'asc'">
                 order by ri.rent asc

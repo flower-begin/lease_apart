@@ -18,7 +18,7 @@ public interface LeaseAgreementMapper extends BaseMapper<LeaseAgreement> {
 
     Page<AgreementVo> customQueryList(@Param("page") Page<AgreementVo> page, @Param("queryVo") AgreementQueryVo queryVo);
 
-    AgreementVo customQueryListById(Long id);
+    AgreementVo customQueryListById(@Param("id") Long id);
 }
 
 

@@ -98,7 +98,8 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             ArrayList<GraphInfo> graphInfos = new ArrayList<>(graphVoList.size());
             for (GraphVo graphVo : graphVoList) {
                 GraphInfo graphInfo = new GraphInfo();
-                graphInfo.setId(id);
+                // 注意：这里要写 item_id（关联的房间 id），不能写 graph_info 自身主键
+                graphInfo.setItemId(id);
                 graphInfo.setItemType(ItemType.ROOM);
                 graphInfo.setName(graphVo.getName());
                 graphInfo.setUrl(graphVo.getUrl());

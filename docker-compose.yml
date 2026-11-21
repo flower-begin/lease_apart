@@ -1,0 +1,62 @@
+# =============================================================================
+#  尚庭公寓（lease）依赖服务
+#
+#  只启动「数据库 + 缓存」两个依赖，两个 Spring Boot 服务和两个前端仍然在宿主机上跑，
+#  这样改代码可以热重载，也不用为每个模块写 Dockerfile。
+#
+#  用法：
+#      docker compose up -d          # 首次启动会自动执行 sql/lease.sql 建库建表
+#      docker compose logs -f mysql  # 看初始化日志
+#      docker compose down           # 停止（数据保留在 volume 里）
+#      docker compose down -v        # 停止并清空数据（想重新初始化时用）
+#
+#  注意：
+#    * 首次启动时 MySQL 会把 ./sql 目录下的 *.sql 全部执行一遍（这是官方镜像的行为），
+#      所以 sql/lease.sql 会被自动导入，不需要手动 mysql < ...
+#    * 如果本机 3306 / 6379 已被占用，改下面的 ports 映射即可（例如 "3307:3306"），
+#      同时记得改两个后端 application.yaml 里的端口。
+# =============================================================================
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: lease-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-time-zone=+08:00
+    ports:
+      - "3306:3306"
+    volumes:
+      # 首次初始化会自动执行这里的 sql/lease.sql
+      - ./sql:/docker-entrypoint-initdb.d:ro
+      - lease-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: lease-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - lease-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  lease-mysql-data:
+  lease-redis-data:

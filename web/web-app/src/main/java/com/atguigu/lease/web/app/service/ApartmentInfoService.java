@@ -2,7 +2,10 @@ package com.atguigu.lease.web.app.service;
 
 import com.atguigu.lease.model.entity.ApartmentInfo;
 import com.atguigu.lease.web.app.vo.apartment.ApartmentDetailVo;
+import com.atguigu.lease.web.app.vo.apartment.ApartmentItemVo;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author liubo
@@ -13,4 +16,8 @@ public interface ApartmentInfoService extends IService<ApartmentInfo> {
 
     ApartmentDetailVo getApartmentDetailById(Long id);
 
+    /**
+     * 已发布的公寓列表（首页"热门公寓"用）。
+     */
+    List<ApartmentItemVo> listPublished();
 }

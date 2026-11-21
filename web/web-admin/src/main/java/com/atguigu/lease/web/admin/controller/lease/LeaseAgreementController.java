@@ -43,7 +43,9 @@ public class LeaseAgreementController {
     }
 
     @Operation(summary = "根据id查询租约信息")
-    @GetMapping(name = "getById")
+    // 官方后台前端（rentHouseAdmin）调用的是 GET /admin/agreement?id=xxx，
+    // 也就是类级别的根路径；这里同时保留 /getById，两种写法都能用。
+    @GetMapping({"", "getById"})
     public Result<AgreementVo> getById(@RequestParam Long id) {
         AgreementVo agreementVo = leaseAgreementService.customGetById(id);
         return Result.ok(agreementVo);

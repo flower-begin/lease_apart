@@ -15,4 +15,7 @@ public class ApartmentItemVo extends ApartmentInfo {
     @Schema(description = "空闲房间数")
     private Long freeRoomCount;
 
+    @Schema(description = "封面图（第一张公寓图片的 URL）")
+    private String cover;
+
 }

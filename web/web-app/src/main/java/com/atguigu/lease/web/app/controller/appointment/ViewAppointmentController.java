@@ -4,7 +4,6 @@ package com.atguigu.lease.web.app.controller.appointment;
 import com.atguigu.lease.common.context.LoginUserContext;
 import com.atguigu.lease.common.result.Result;
 import com.atguigu.lease.model.entity.ViewAppointment;
-import com.atguigu.lease.model.enums.AppointmentStatus;
 import com.atguigu.lease.web.app.service.ViewAppointmentService;
 import com.atguigu.lease.web.app.vo.appointment.AppointmentDetailVo;
 import com.atguigu.lease.web.app.vo.appointment.AppointmentItemVo;
@@ -26,10 +25,17 @@ public class ViewAppointmentController {
     @Operation(summary = "保存或更新看房预约")
     @PostMapping("saveOrUpdate")
     public Result saveOrUpdate(@RequestBody ViewAppointment viewAppointment) {
-        Long userId = LoginUserContext.getUserId();
-        viewAppointment.setUserId(userId);
-        viewAppointment.setAppointmentStatus(AppointmentStatus.WAITING);
-        viewAppointmentService.saveOrUpdate(viewAppointment);
+        viewAppointmentService.saveOrUpdateAppointment(
+                viewAppointment,
+                LoginUserContext.getUserId(),
+                LoginUserContext.getUserPhone());
+        return Result.ok();
+    }
+
+    @Operation(summary = "取消预约")
+    @PostMapping("cancel")
+    public Result cancel(@RequestParam Long id) {
+        viewAppointmentService.cancel(id, LoginUserContext.getUserId());
         return Result.ok();
     }
 
@@ -42,7 +48,7 @@ public class ViewAppointmentController {
 
     @GetMapping("getDetailById")
     @Operation(summary = "根据ID查询预约详情信息")
-    public Result<AppointmentDetailVo> getDetailById(Long id) {
+    public Result<AppointmentDetailVo> getDetailById(@RequestParam Long id) {
         Long userId = LoginUserContext.getUserId();
         return Result.ok(viewAppointmentService.getDetailById(id, userId));
     }

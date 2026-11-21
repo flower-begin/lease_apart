@@ -11,6 +11,19 @@
         <result property="appointmentStatus" column="appointment_status"/>
     </resultMap>
 
+    <resultMap id="appointmentDetailMap" type="com.atguigu.lease.web.app.vo.appointment.AppointmentDetailVo">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="apartmentId" column="apartment_id"/>
+        <result property="appointmentTime" column="appointment_time"/>
+        <result property="additionalInfo" column="additional_info"/>
+        <result property="appointmentStatus" column="appointment_status"/>
+        <result property="apartmentName" column="apartment_name"/>
+        <result property="apartmentAddress" column="apartment_address"/>
+    </resultMap>
+
     <select id="listByUserId" resultMap="appointmentItemMap">
         select va.id, va.appointment_time, va.appointment_status,
                ai.name apartment_name
@@ -20,8 +33,12 @@
         order by va.create_time desc
     </select>
 
-    <select id="getDetailById" resultType="com.atguigu.lease.web.app.vo.appointment.AppointmentDetailVo">
-        select va.*, ai.name apartment_name
+    <select id="getDetailById" resultMap="appointmentDetailMap">
+        select va.id, va.user_id, va.name, va.phone, va.apartment_id,
+               va.appointment_time, va.additional_info, va.appointment_status,
+               ai.name apartment_name,
+               concat(coalesce(ai.province_name, ''), coalesce(ai.city_name, ''),
+                      coalesce(ai.district_name, ''), coalesce(ai.address_detail, '')) apartment_address
         from view_appointment va
         left join apartment_info ai on va.apartment_id = ai.id and ai.is_deleted = 0
         where va.is_deleted = 0 and va.id = #{id} and va.user_id = #{userId}

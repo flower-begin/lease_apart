@@ -18,4 +18,13 @@ public interface ViewAppointmentService extends IService<ViewAppointment> {
 
     AppointmentDetailVo getDetailById(Long id, Long userId);
 
+    /**
+     * 新增 / 修改预约。新增时会做重复预约校验，并把用户姓名、手机号补全。
+     */
+    void saveOrUpdateAppointment(ViewAppointment appointment, Long userId, String phone);
+
+    /**
+     * 取消预约（只能取消自己的、且还在"待看房"状态的预约）。
+     */
+    void cancel(Long id, Long userId);
 }

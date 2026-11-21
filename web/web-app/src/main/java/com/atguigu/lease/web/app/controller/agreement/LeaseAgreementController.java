@@ -11,8 +11,11 @@ import com.atguigu.lease.web.app.vo.agreement.AgreementItemVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -45,12 +48,24 @@ public class LeaseAgreementController {
         return Result.ok();
     }
 
-    @Operation(summary = "保存或更新租约", description = "用于续约")
+    @Operation(summary = "续约", description = "更新租期与租金，状态变为续约待确认")
+    @PostMapping("renew")
+    public Result renew(@RequestParam Long id,
+                        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date leaseStartDate,
+                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date leaseEndDate,
+                        @RequestParam(required = false) Long leaseTermId,
+                        @RequestParam(required = false) BigDecimal rent,
+                        @RequestParam(required = false) Long paymentTypeId) {
+        leaseAgreementService.renew(id, LoginUserContext.getUserPhone(),
+                leaseStartDate, leaseEndDate, leaseTermId, rent, paymentTypeId);
+        return Result.ok();
+    }
+
+    @Operation(summary = "签约", description = "新增租约，状态为签约待确认")
     @PostMapping("saveOrUpdate")
     public Result saveOrUpdate(@RequestBody LeaseAgreement leaseAgreement) {
-        String phone = LoginUserContext.getUserPhone();
-        leaseAgreement.setPhone(phone);
-        leaseAgreementService.saveOrUpdate(leaseAgreement);
+        // phone 一律以登录态为准，防止前端伪造
+        leaseAgreementService.sign(leaseAgreement, LoginUserContext.getUserPhone());
         return Result.ok();
     }
 }

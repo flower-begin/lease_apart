@@ -1,0 +1,91 @@
+name: Deploy H5 (web-app-frontend) to GitHub Pages
+
+# 只部署用户端 H5 的**静态产物**。
+# 后端（Spring Boot 8080/8081）无法跑在 Pages 上，
+# 所以必须在仓库变量里配一个公网可访问的后端地址，否则页面能打开但没数据。
+#
+# 配置方式：
+#   Settings -> Secrets and variables -> Actions -> Variables -> New repository variable
+#   Name : VITE_APP_BASE_URL
+#   Value: https://你的后端域名          例如 https://lease-api.example.com
+#
+# 同时把 Pages 的 Source 设为 "GitHub Actions"：
+#   Settings -> Pages -> Build and deployment -> Source = GitHub Actions
+
+on:
+  push:
+    branches:
+      - master
+      - feature_payment
+    paths:
+      - 'web-app-frontend/**'
+      - '.github/workflows/deploy-h5.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: web-app-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web-app-frontend
+        env:
+          HUSKY: 0
+          CI: true
+        run: npm ci --no-audit --no-fund
+
+      - name: Inject production env
+        working-directory: web-app-frontend
+        run: |
+          BASE="/${{ github.event.repository.name }}/"
+          API="${{ vars.VITE_APP_BASE_URL || 'http://localhost:8081' }}"
+          echo "VITE_APP_BASE_PATH=$BASE" > .env.production.local
+          echo "VITE_APP_BASE_URL=$API" >> .env.production.local
+          echo "----- .env.production.local -----"
+          cat .env.production.local
+
+      - name: Build
+        working-directory: web-app-frontend
+        run: npm run build
+
+      - name: Show build output
+        run: |
+          ls -la web-app-frontend/dist
+          du -sh web-app-frontend/dist
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web-app-frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

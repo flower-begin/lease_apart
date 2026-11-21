@@ -10,14 +10,22 @@
         <collection property="feeValueList" ofType="com.atguigu.lease.web.admin.vo.fee.FeeValueVo">
             <id property="id" column="fv_id"/>
             <result property="name" column="fv_name"/>
-            <result property="feeKeyId" column="fee_key_id"/>
+            <result property="unit" column="fv_unit"/>
+            <result property="feeKeyId" column="fv_fee_key_id"/>
+            <result property="feeKeyName" column="name"/>
         </collection>
     </resultMap>
 
     <select id="feeInfoList" resultMap="aMp">
-        select fk.id,fk.name,fv.id fv_id,fv.name fv_name,fv.fee_key_id
-        from fee_key fk left join
-             fee_value fv on fk.id = fv.fee_key_id and fv.is_deleted = 0
-        where fk.is_deleted = 0;
+        select fk.id,
+               fk.name,
+               fv.id          fv_id,
+               fv.name        fv_name,
+               fv.unit        fv_unit,
+               fv.fee_key_id  fv_fee_key_id
+        from fee_key fk
+                 left join fee_value fv on fk.id = fv.fee_key_id and fv.is_deleted = 0
+        where fk.is_deleted = 0
+        order by fk.id asc, fv.id asc
     </select>
 </mapper>

@@ -3,6 +3,13 @@ server:
   address: 0.0.0.0
 
 spring:
+  jackson:
+    time-zone: GMT+8                          # 东八区
+    date-format: yyyy-MM-dd HH:mm:ss          # 全局日期格式
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
   data:
     redis:
       host: localhost
@@ -23,9 +30,14 @@ spring:
 
 #用于打印框架生成的sql语句，便于调试
 mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     auto-mapping-behavior: full
+
+#让接口测试工具正确识别参数类型
+springdoc:
+  default-flat-param-object: true
 
 # 本地文件上传存储路径
 upload:
@@ -38,17 +50,22 @@ aliyun:
     access-key-secret: YXEJsy0Xiqcog9haCYhnc1pdyHi4CM
     endpoint: dysmsapi.aliyuncs.com
 
+# 短信验证码本地开发模式
+# mock=true 时不真正调用阿里云，验证码只写 Redis 并打印到控制台，
+# 这样本地没买短信服务也能登录（默认验证码在日志里搜 "短信验证码"）。
+lease:
+  sms:
+    mock: true
+    fixed-code: "123456"        # mock 模式下如果不想看日志，也可固定用这个码登录；留空则随机
+
 web:
   app:
-    auth-include: /app/**
-    auth-exclude: /app/login/**,/app/ai/**
+    # 必须登录的接口
+    auth-include: /app/history/**,/app/appointment/**,/app/agreement/**,/app/info,/app/user/**
+    # 完全放行的接口
+    auth-exclude: /app/login/**
+    # 可选登录：登录了会记录浏览历史，未登录也能访问
+    optional-auth-include: /app/room/**,/app/apartment/**
 
-# DeepSeek AI配置
-deepseek:
-  api:
-    key: ${DEEPSEEK_API_KEY:sk-ade2e6219a50477bbf85d4ac84344f41}
-    url: https://api.deepseek.com/v1/chat/completions
-    model: deepseek-chat
-
-
-
+# 说明：原来的 DeepSeek AI 问答功能已移除
+# （controller/ai、service/AiService、custom/config/DeepSeek* 等文件已删除）

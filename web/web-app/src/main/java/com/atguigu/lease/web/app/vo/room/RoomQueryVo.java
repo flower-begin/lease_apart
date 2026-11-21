@@ -31,4 +31,7 @@ public class RoomQueryVo {
     @Schema(description = "价格排序方式", allowableValues = {"desc", "asc"})
     private String orderType;
 
+    @Schema(description = "关键字，匹配房间号或公寓名称")
+    private String keyword;
+
 }

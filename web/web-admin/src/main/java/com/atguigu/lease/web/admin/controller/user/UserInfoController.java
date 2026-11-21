@@ -26,11 +26,17 @@ public class UserInfoController {
     @GetMapping("page")
     public Result<IPage<UserInfo>> pageUserInfo(@RequestParam long current, @RequestParam long size, UserInfoQueryVo queryVo) {
         IPage<UserInfo> page = new Page<>(current, size);
-        LambdaQueryWrapper<UserInfo> userInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userInfoLambdaQueryWrapper.eq(queryVo.getStatus() != null, UserInfo::getStatus, queryVo.getStatus());
-        userInfoLambdaQueryWrapper.eq(queryVo.getPhone() != null, UserInfo::getPhone, queryVo.getPhone());
-        // 单表条件分页查询，直接调用mybatis-plus方法即可
-        userInfoService.page(page, userInfoLambdaQueryWrapper);  // 参数一存放分页参数，参数二存放条件
+        LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(queryVo.getStatus() != null, UserInfo::getStatus, queryVo.getStatus());
+        if (queryVo.getPhone() != null && !queryVo.getPhone().isBlank()) {
+            wrapper.like(UserInfo::getPhone, queryVo.getPhone());
+        }
+        wrapper.orderByDesc(UserInfo::getId);
+        userInfoService.page(page, wrapper);
+        // 不向前端回显密码
+        if (page.getRecords() != null) {
+            page.getRecords().forEach(user -> user.setPassword(null));
+        }
         return Result.ok(page);
     }
 

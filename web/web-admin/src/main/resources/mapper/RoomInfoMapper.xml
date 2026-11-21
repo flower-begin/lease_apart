@@ -5,50 +5,72 @@
 <mapper namespace="com.atguigu.lease.web.admin.mapper.RoomInfoMapper">
 
     <resultMap id="cMap" type="com.atguigu.lease.web.admin.vo.room.RoomItemVo">
-        <id property="id" column="id"/>
+        <id property="id" column="ri_id"/>
+        <result property="roomNumber" column="room_number"/>
+        <result property="rent" column="rent"/>
+        <result property="apartmentId" column="apartment_id"/>
+        <result property="isRelease" column="ri_release"/>
+        <result property="isCheckIn" column="is_check_in"/>
+        <result property="leaseEndDate" column="lease_end_date"/>
 
         <association property="apartmentInfo" javaType="com.atguigu.lease.model.entity.ApartmentInfo">
-            <id column="a_id" property="id"/>
-            <id column="ai_release" property="isRelease"/>
+            <id property="id" column="ai_id"/>
+            <result property="name" column="ai_name"/>
+            <result property="introduction" column="ai_introduction"/>
+            <result property="districtId" column="ai_district_id"/>
+            <result property="districtName" column="ai_district_name"/>
+            <result property="cityId" column="ai_city_id"/>
+            <result property="cityName" column="ai_city_name"/>
+            <result property="provinceId" column="ai_province_id"/>
+            <result property="provinceName" column="ai_province_name"/>
+            <result property="addressDetail" column="ai_address_detail"/>
+            <result property="latitude" column="ai_latitude"/>
+            <result property="longitude" column="ai_longitude"/>
+            <result property="phone" column="ai_phone"/>
+            <result property="isRelease" column="ai_release"/>
         </association>
     </resultMap>
 
     <select id="customQueryList" resultMap="cMap">
-        select ri.*,
-               la.id is not null is_check_in, la.lease_end_date,
-               ai.id a_id,
-               ai.name,
-               ai.introduction,
-               ai.district_id,
-               ai.district_name,
-               ai.city_id,
-               ai.city_name,
-               ai.province_id,
-               ai.province_name,
-               ai.address_detail,
-               ai.latitude,
-               ai.longitude,
-               ai.phone,
-               ai.is_release ai_release
+        select ri.id            ri_id,
+               ri.room_number   room_number,
+               ri.rent          rent,
+               ri.apartment_id  apartment_id,
+               ri.is_release    ri_release,
+               (la.id is not null) as is_check_in,
+               la.lease_end_date   lease_end_date,
+               ai.id               ai_id,
+               ai.name             ai_name,
+               ai.introduction     ai_introduction,
+               ai.district_id      ai_district_id,
+               ai.district_name    ai_district_name,
+               ai.city_id          ai_city_id,
+               ai.city_name        ai_city_name,
+               ai.province_id      ai_province_id,
+               ai.province_name    ai_province_name,
+               ai.address_detail   ai_address_detail,
+               ai.latitude         ai_latitude,
+               ai.longitude        ai_longitude,
+               ai.phone            ai_phone,
+               ai.is_release       ai_release
         from room_info ri
-        left join lease_agreement la on ri.id = la.room_id
-        and la.is_deleted = 0 and la.`status` in (2,5,7)
-        left join apartment_info ai on ri.apartment_id = ai.id
-        where ri.is_deleted = 0 and ai.is_deleted = 0
+                 left join apartment_info ai on ri.apartment_id = ai.id and ai.is_deleted = 0
+                 left join lease_agreement la on ri.id = la.room_id
+            and la.is_deleted = 0
+            and la.`status` in (2, 5, 7)
+        where ri.is_deleted = 0
         <if test="queryVo.provinceId != null">
             and ai.province_id = #{queryVo.provinceId}
         </if>
-
         <if test="queryVo.cityId != null">
             and ai.city_id = #{queryVo.cityId}
         </if>
-
         <if test="queryVo.districtId != null">
             and ai.district_id = #{queryVo.districtId}
         </if>
-
         <if test="queryVo.apartmentId != null">
             and ai.id = #{queryVo.apartmentId}
         </if>
+        order by ri.id desc
     </select>
 </mapper>

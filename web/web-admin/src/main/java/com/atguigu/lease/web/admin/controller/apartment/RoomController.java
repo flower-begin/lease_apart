@@ -62,7 +62,8 @@ public class RoomController {
     public Result updateReleaseStatusById(Long id, ReleaseStatus status) {
         LambdaUpdateWrapper<RoomInfo> roomInfoLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         roomInfoLambdaUpdateWrapper.eq(RoomInfo::getId, id);
-        roomInfoLambdaUpdateWrapper.eq(RoomInfo::getIsRelease, status);
+        // 注意：这里是 set，不是 eq。写成 eq 会把新状态当成过滤条件，导致更新 0 行。
+        roomInfoLambdaUpdateWrapper.set(RoomInfo::getIsRelease, status);
         roomInfoService.update(roomInfoLambdaUpdateWrapper);
         return Result.ok();
     }
