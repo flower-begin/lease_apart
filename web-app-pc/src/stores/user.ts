@@ -11,7 +11,10 @@ export const useUserStore = defineStore('pc-user', {
 
   getters: {
     isLogin: state => Boolean(state.token),
-    nickname: state => state.userInfo?.nickname || '未登录'
+    nickname: state => state.userInfo?.nickname || '未登录',
+    /** 是否是管理员（可以进后台、可以看全部页面） */
+    isAdmin: state => state.userInfo?.roleCode === 'admin',
+    isTenant: state => state.userInfo?.roleCode !== 'admin'
   },
 
   actions: {

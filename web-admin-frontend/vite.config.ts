@@ -23,6 +23,8 @@ export default defineConfig(({ mode }) => {
     server: {
       port,
       host: true,
+      // 用 tunnel 暴露到公网时放行任意 Host（仅开发环境）
+      allowedHosts: true,
       proxy: {
         // /api/apartment/pageItem -> {apiTarget}/admin/apartment/pageItem
         '/api': {

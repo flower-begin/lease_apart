@@ -13,6 +13,7 @@ import com.atguigu.lease.model.entity.UserInfo;
 import com.atguigu.lease.model.enums.BaseStatus;
 import com.atguigu.lease.web.app.service.LoginService;
 import com.atguigu.lease.web.app.service.UserInfoService;
+import com.atguigu.lease.web.app.mapper.SystemUserMapper;
 import com.atguigu.lease.web.app.vo.user.LoginVo;
 import com.atguigu.lease.web.app.vo.user.RegisterVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -34,6 +35,9 @@ public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private UserInfoService userInfoService;
+
+    @Autowired
+    private SystemUserMapper systemUserMapper;
 
     /** 阿里云短信客户端。mock 模式下不依赖它，所以允许不存在。 */
     @Autowired(required = false)
@@ -144,6 +148,17 @@ public class LoginServiceImpl implements LoginService {
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserInfo::getUsername, loginVo.getUsername().trim());
         UserInfo userInfo = userInfoService.getOne(wrapper);
+
+        // 账号不存在时，先看看是不是后台员工账号：
+        // C 端（user_info）和后台（system_user）是两套账号体系，
+        // 拿 admin/operator/cleaner 来租客端登录必然失败，
+        // 这里给一句明确提示，比「账号或密码错误」有用得多。
+        if (userInfo == null) {
+            String employee = systemUserMapper.selectUsernameByUsername(loginVo.getUsername().trim());
+            if (StringUtils.hasText(employee)) {
+                throw new LeaseException(ResultCodeEnum.APP_LOGIN_EMPLOYEE_ACCOUNT);
+            }
+        }
 
         // 账号不存在 / 没设过密码 / 密码错，统一提示，避免暴露账号是否存在
         if (userInfo == null

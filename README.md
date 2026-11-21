@@ -108,6 +108,17 @@ docker compose up -d
   | `lisi` | `123456` | 13800000002 | 李四 |
   | `wangwu` | `123456` | 13800000003 | 王五 |
 
+> ⚠️ **后台只允许管理员登录，C 端所有用户都能登**：
+>
+> | 端 | 账号存在哪 | 可用账号 | 能看到什么 |
+> | --- | --- | --- | --- |
+> | **后台 5174** | `system_user`（`type = 0`） | 只有 `admin` | 全部菜单 |
+> | **移动端 8888 / 网页版 5175** | `user_info` | `admin`（角色 admin）、`zhangsan` / `lisi` / `wangwu`（角色 tenant）、注册的新用户 | 管理员看全部页面 + 「进入后台管理」入口；租客只看自己的预约 / 租约 / 账单等 |
+>
+> - 员工账号（`operator` / `cleaner`，`type = 1`）**登录后台会被拒绝**：提示「只有管理员可以登录后台管理系统」
+> - 后台「系统管理 → **用户管理**」里能看到**所有注册用户**，可以把某个用户设为管理员 / 设为租客 / 重置密码
+> - `admin` 在两张表里都有：`system_user` 里那个用来登后台，`user_info` 里那个用来登 C 端（`upgrade-03` 脚本种的）
+
 > ⚠️ 脚本开头是 `DROP TABLE IF EXISTS`，**会清空同名表**，不要在生产库执行。
 
 数据库连接配置在：
@@ -190,11 +201,18 @@ SELECT name, province_id, NOW(), NOW(), 0 FROM tmp_city;
 
 ### 初始化角色权限（RBAC）
 
-后台的角色/菜单/按钮权限是**独立升级脚本**，建库之后要单独执行一次：
+后台的角色/菜单/按钮权限是**独立升级脚本**，建库之后要按顺序执行这两个：
 
 ```powershell
 mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\upgrade-02-rbac.sql
+mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\upgrade-03-user-role.sql
 ```
+
+`upgrade-02` 建 RBAC 四张表 + 6 个角色；`upgrade-03` 做三件事：
+
+1. `user_info` 加 `role_code`（`admin` / `tenant`），并种一个 `admin` 账号让管理员也能登 C 端
+2. 后台菜单：**「员工管理」→「用户管理」**，指向全部注册用户；删掉重复的「客户管理」分组
+3. 超级管理员重新全量授权
 
 它新增 4 张表（`sys_role` / `sys_menu` / `sys_role_menu` / `sys_user_role`）并写入种子数据：
 
@@ -224,6 +242,44 @@ mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\upgrade-02-rba
 @PostMapping("saveOrUpdate")
 public Result saveOrUpdate(@RequestBody ApartmentSubmitVo vo) { ... }
 ```
+
+### 造 1 万条房源测试数据（可选）
+
+`lease.sql` 里只有 6 个公寓 / 12 个房间，列表页太空。这个脚本用 **SQL 自己生成**：
+
+```powershell
+mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\seed-10k-apartments-rooms.sql
+```
+
+生成内容（约 5 万行，5~20 秒）：
+
+| 表 | 数量 | 说明 |
+| --- | --- | --- |
+| `apartment_info` | **1,000** | 名字按「城市 + 词库 + 公寓 + 序号」，省市区从 `district_info` 轮换取 |
+| `room_info` | **9,000** | 每公寓 9 间（101/102/103/201…303），租金 900~5100 |
+| `graph_info` | 11,000 | 公寓 2 张封面 + 房间 1 张（picsum 占位图） |
+| `apartment_label` | 3,000 | 近地铁 / 精装修 / 拎包入住 |
+| `room_facility` | 27,000 | WiFi / 空调 / 洗衣机 |
+
+**为什么用 SQL 生成而不是 INSERT 文件**：1 万条 `INSERT VALUES` 手写得两三兆，这里用「数字表（1~10000）+ `INSERT ... SELECT`」让 MySQL 自己算，脚本只有几 KB。
+
+**幂等**：每张表都是「先造到临时表 → 按业务键剔掉库里已有的 → 再插入」，跑几遍不会重复。
+
+> 想清掉这批数据（种子里 5 个真实公寓名不以数字结尾，不会被误删）：
+>
+> ```sql
+> DELETE g FROM graph_info g JOIN room_info r ON r.id = g.item_id AND g.item_type = 2
+>   JOIN apartment_info a ON a.id = r.apartment_id WHERE a.name REGEXP '公寓[0-9]+$';
+> DELETE g FROM graph_info g JOIN apartment_info a ON a.id = g.item_id AND g.item_type = 1
+>   WHERE a.name REGEXP '公寓[0-9]+$';
+> DELETE l FROM apartment_label l JOIN apartment_info a ON a.id = l.apartment_id
+>   WHERE a.name REGEXP '公寓[0-9]+$';
+> DELETE f FROM room_facility f JOIN room_info r ON r.id = f.room_id
+>   JOIN apartment_info a ON a.id = r.apartment_id WHERE a.name REGEXP '公寓[0-9]+$';
+> DELETE r FROM room_info r JOIN apartment_info a ON a.id = r.apartment_id
+>   WHERE a.name REGEXP '公寓[0-9]+$';
+> DELETE FROM apartment_info WHERE name REGEXP '公寓[0-9]+$';
+> ```
 
 ---
 

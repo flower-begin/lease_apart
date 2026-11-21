@@ -68,6 +68,11 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "0.0.0.0",
       port: Number(env.VITE_APP_PORT),
+      // 用 hostc / ngrok / cloudflare tunnel 暴露到公网时，
+      // Vite 会因 Host 不在白名单里返回 "Blocked request"，这里直接放行（仅开发环境）
+      allowedHosts: true,
+      // 隧道场景下 HMR 的 ws 会反复断线导致页面卡住，VITE_DISABLE_HMR=1 可关掉
+      hmr: env.VITE_DISABLE_HMR === "1" ? false : undefined,
       proxy: {
         "/app": {
           target: env.VITE_APP_BASE_URL,

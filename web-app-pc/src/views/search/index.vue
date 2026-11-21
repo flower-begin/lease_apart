@@ -115,6 +115,7 @@
       <section class="block">
         <h2 class="section-title">
           房源列表
+          <span v-if="keyword" class="muted total-text">· 关键词「{{ keyword }}」</span>
           <span class="muted total-text">共 {{ total }} 套</span>
         </h2>
 
@@ -168,8 +169,11 @@ function addressOf(item: ApartmentItemVo) {
 
 async function fetchApartments() {
   try {
-    const res = await apartmentApi.list()
-    apartments.value = res.data || []
+    // 只取 12 条做「热门公寓」。之前这里拿的是全部已发布公寓，
+    // 库里有一千多个公寓时会把上千张卡片渲染在筛选条上面：
+    // 页面卡死 + 筛选条被顶出屏幕，看起来就像「筛选条件自己消失了」
+    const res = await apartmentApi.list(12)
+    apartments.value = (res.data || []).slice(0, 12)
   } catch {
     /* 忽略 */
   }
@@ -448,6 +452,7 @@ onMounted(async () => {
 
 /* ---------------- 房源网格 ---------------- */
 .room-grid {
+  position: relative; /* 让 v-loading 的遮罩只盖住列表，不会铺到整页挡住上面的搜索框 */
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;

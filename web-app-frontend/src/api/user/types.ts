@@ -29,6 +29,10 @@ export interface UserInfoInterface {
   avatarUrl: string;
   // 用户名
   nickname: string;
+  // 手机号
+  phone?: string;
+  // 角色：admin-管理员 tenant-租客
+  roleCode?: string;
 }
 // 用户state
 export interface UserStateInterface {

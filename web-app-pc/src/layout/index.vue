@@ -36,7 +36,10 @@
                   <el-dropdown-item command="appointment">我的预约</el-dropdown-item>
                   <el-dropdown-item command="agreement">我的租约</el-dropdown-item>
                   <el-dropdown-item command="history">浏览历史</el-dropdown-item>
-                  <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                  <el-dropdown-item v-if="userStore.isAdmin" command="admin" divided>
+                    进入后台管理
+                  </el-dropdown-item>
+                  <el-dropdown-item command="logout" :divided="!userStore.isAdmin">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -90,6 +93,11 @@ function goLogin() {
 }
 
 async function onCommand(command: string) {
+  // 管理员入口：后台管理端是独立的一个站（5174），这里直接开新窗口
+  if (command === 'admin') {
+    window.open(`${window.location.protocol}//${window.location.hostname}:5174`, '_blank')
+    return
+  }
   if (command === 'logout') {
     try {
       await ElMessageBox.confirm('确定要退出登录吗？', '提示', { type: 'warning' })

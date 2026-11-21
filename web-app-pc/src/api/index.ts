@@ -56,7 +56,8 @@ export const termApi = {
 
 /* ---------------------------------- 公寓 ---------------------------------- */
 export const apartmentApi = {
-  list: () => http.get<ApartmentItemVo[]>('/app/apartment/list'),
+  /** limit 用于首页「热门公寓」只取前 N 条，不传则取全部 */
+  list: (limit?: number) => http.get<ApartmentItemVo[]>('/app/apartment/list', limit ? { limit } : undefined),
   detail: (id: number) => http.get<ApartmentDetailVo>('/app/apartment/getDetailById', { id })
 }
 
@@ -71,8 +72,7 @@ export const roomApi = {
 }
 
 /** 把筛选条件整理成后端要的查询参数（空值不下发） */
-export function buildRoomQuery(query: RoomQuery): Record<string, unknown> {
-  const params: Record<string, unknown> = {}
+export function buildRoomQuery(query: RoomQuery): Record<string, unknown> {  const params: Record<string, unknown> = {}
   const keys: (keyof RoomQuery)[] = [
     'provinceId',
     'cityId',

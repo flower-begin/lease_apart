@@ -41,6 +41,7 @@ public enum ResultCodeEnum {
     APP_LOGIN_ACCOUNT_EMPTY(510, "账号为空"),
     APP_REGISTER_USERNAME_EXIST(511, "该账号已被注册"),
     APP_REGISTER_PHONE_EXIST(512, "该手机号已被注册"),
+    APP_LOGIN_EMPLOYEE_ACCOUNT(513, "该账号是后台员工账号，请到后台管理端登录"),
 
 
     TOKEN_EXPIRED(601, "token过期"),

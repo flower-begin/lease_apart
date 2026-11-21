@@ -70,6 +70,6 @@ public class LoginController {
         if (user == null) {
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_AUTH);
         }
-        return Result.ok(new UserInfoVo(user.getNickname(), user.getAvatarUrl(), user.getPhone()));
+        return Result.ok(new UserInfoVo(user.getNickname(), user.getAvatarUrl(), user.getPhone(), user.getRoleCode()));
     }
 }

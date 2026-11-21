@@ -107,10 +107,15 @@ export const agreementApi = {
 
 /* -------------------------------------------------------------- App 用户 */
 export const userApi = {
-  page: (params: { current: number; size: number; phone?: string }) =>
+  page: (params: { current: number; size: number; keyword?: string; phone?: string; roleCode?: string }) =>
     request.get<ApiResult<PageResult<UserInfo>>>('/user/page', { params }),
+  statistics: () =>
+    request.get<ApiResult<{ total: number; admin: number; tenant: number }>>('/user/statistics'),
   updateStatus: (id: number, status: number) =>
-    request.post<ApiResult>('/user/updateStatusById', null, { params: { id, status } })
+    request.post<ApiResult>('/user/updateStatusById', null, { params: { id, status } }),
+  updateRole: (id: number, roleCode: string) =>
+    request.post<ApiResult>('/user/updateRoleById', null, { params: { id, roleCode } }),
+  resetPassword: (id: number) => request.post<ApiResult>('/user/resetPassword', null, { params: { id } })
 }
 
 /* ------------------------------------------------------------ 系统-员工 */

@@ -29,6 +29,10 @@ public class UserInfo extends BaseEntity {
     @TableField(value = "password")
     private String password;
 
+    @Schema(description = "角色：admin-管理员 tenant-租客（决定 C 端能看到哪些页面）")
+    @TableField(value = "role_code")
+    private String roleCode;
+
     @Schema(description = "头像url")
     @TableField(value = "avatar_url")
     private String avatarUrl;

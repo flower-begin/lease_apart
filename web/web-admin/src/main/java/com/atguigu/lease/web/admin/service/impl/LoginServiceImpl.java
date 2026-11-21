@@ -7,6 +7,7 @@ import com.atguigu.lease.common.result.ResultCodeEnum;
 import com.atguigu.lease.common.utils.JwtUtil;
 import com.atguigu.lease.model.entity.SystemUser;
 import com.atguigu.lease.model.enums.BaseStatus;
+import com.atguigu.lease.model.enums.SystemUserType;
 import com.atguigu.lease.web.admin.service.LoginService;
 import com.atguigu.lease.web.admin.service.SystemUserService;
 import com.atguigu.lease.web.admin.vo.login.CaptchaVo;
@@ -83,7 +84,15 @@ public class LoginServiceImpl implements LoginService {
             throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_DISABLED_ERROR);
         }
 
-        // 7. 签发 token
+        // 7. 只有管理员可以登录后台。
+        //    后台是「平台方」用的，普通员工账号（type=1）即使密码对也不放进来，
+        //    避免一线人员误操作、也避免权限模型变复杂。
+        if (systemUser.getType() != SystemUserType.ADMIN) {
+            throw new LeaseException("只有管理员可以登录后台管理系统",
+                    ResultCodeEnum.ADMIN_ACCESS_FORBIDDEN.getCode());
+        }
+
+        // 8. 签发 token
         return JwtUtil.createToken(systemUser.getId(), systemUser.getUsername());
     }
 }

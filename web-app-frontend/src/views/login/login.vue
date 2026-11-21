@@ -93,7 +93,13 @@
         </div>
 
         <div v-if="!isRegister" class="mt-[14px] text-center text-[12px] --van-gray-5">
-          测试账号：zhangsan / lisi / wangwu，密码均为 123456
+          <div>租客测试账号：zhangsan / lisi / wangwu</div>
+          <div>密码均为 123456</div>
+          <div class="mt-[8px] pt-[8px] border-t border-dashed border-[#eadfd2]">
+            管理员账号：<b>admin</b> / 123456（可看全部页面）<br />
+            员工账号（operator / cleaner）请到
+            <span class="text-[--van-primary-color]">后台管理端（电脑打开 5174 端口）</span>登录
+          </div>
         </div>
       </van-form>
     </div>

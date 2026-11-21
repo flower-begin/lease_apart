@@ -31,7 +31,7 @@ public class UserInfoController {
     @GetMapping("info")
     public Result<UserInfoVo> info() {
         UserInfo user = currentUser();
-        return Result.ok(new UserInfoVo(user.getNickname(), user.getAvatarUrl(), user.getPhone()));
+        return Result.ok(new UserInfoVo(user.getNickname(), user.getAvatarUrl(), user.getPhone(), user.getRoleCode()));
     }
 
     @Operation(summary = "修改昵称和头像")
@@ -51,7 +51,7 @@ public class UserInfoController {
         }
 
         userInfoService.updateById(user);
-        return Result.ok(new UserInfoVo(user.getNickname(), user.getAvatarUrl(), user.getPhone()));
+        return Result.ok(new UserInfoVo(user.getNickname(), user.getAvatarUrl(), user.getPhone(), user.getRoleCode()));
     }
 
     @Operation(summary = "上传头像，返回图片 URL")

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,10 +29,15 @@ public class ApartmentController {
         return Result.ok(apartmentInfoService.getApartmentDetailById(id));
     }
 
-    @Operation(summary = "获取已发布的公寓列表")
+    @Operation(summary = "获取已发布的公寓列表（可限制条数，首页「热门公寓」用）")
     @GetMapping("list")
-    public Result<List<ApartmentItemVo>> list() {
-        return Result.ok(apartmentInfoService.listPublished());
+    public Result<List<ApartmentItemVo>> list(@RequestParam(required = false) Integer limit) {
+        List<ApartmentItemVo> all = apartmentInfoService.listPublished();
+        // 首页只要十来条做展示，不传 limit 时保持原有「全部」语义
+        if (limit != null && limit > 0 && all.size() > limit) {
+            return Result.ok(new ArrayList<>(all.subList(0, limit)));
+        }
+        return Result.ok(all);
     }
 
 }

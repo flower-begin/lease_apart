@@ -198,10 +198,13 @@ export interface AgreementVo {
 
 export interface UserInfo {
   id?: number
+  username?: string
   phone?: string
   avatarUrl?: string
   nickname?: string
   status?: number
+  /** admin-管理员 tenant-租客 */
+  roleCode?: string
 }
 
 export interface SystemPost {

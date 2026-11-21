@@ -228,4 +228,6 @@ export interface UserInfoVo {
   nickname: string
   avatarUrl: string
   phone: string
+  /** admin-管理员 tenant-租客 */
+  roleCode?: string
 }

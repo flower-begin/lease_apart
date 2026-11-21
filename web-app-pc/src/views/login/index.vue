@@ -4,7 +4,10 @@
       <div class="brand">
         <img class="brand-badge" src="/logo.svg" alt="归心寓" />
         <h1 class="brand-title">归心寓</h1>
-        <p class="brand-sub">找房 · 预约看房 · 在线签约</p>
+        <p class="brand-sub">
+          <span class="brand-role">租客端</span>
+          找房 · 预约看房 · 在线签约
+        </p>
         <p class="brand-tagline">WARMTH · HEALING · BELONGING</p>
       </div>
 
@@ -92,8 +95,22 @@
       </div>
 
       <div v-if="!isRegister" class="tips">
-        <p>测试账号：zhangsan / lisi / wangwu</p>
-        <p>密码均为 123456</p>
+        <p class="tips-title">租客测试账号（点一下自动填入）</p>
+        <div class="chips">
+          <button v-for="name in demoAccounts" :key="name" type="button" class="chip" @click="fillAccount(name)">
+            {{ name }}
+          </button>
+        </div>
+        <p class="tips-note">密码均为 <b>123456</b></p>
+        <p class="tips-note">
+          管理员账号：<b>admin</b> / 123456（可看全部页面，并可进入后台）
+        </p>
+        <p class="tips-note tips-admin">
+          员工账号（operator / cleaner）<br />
+          请到
+          <a :href="adminUrl" target="_blank" rel="noopener">后台管理端</a>
+          登录
+        </p>
       </div>
 
       <div class="back">
@@ -123,6 +140,22 @@ const loading = ref(false)
 /** 当前模式：登录 / 注册 */
 const mode = ref<'login' | 'register'>('login')
 const isRegister = computed(() => mode.value === 'register')
+
+/**
+ * 租客端测试账号（user_info 表）。
+ * 后台员工（admin / operator / cleaner）在 system_user 表里，
+ * 两套账号不通用，这里给出明确指引，别让人以为密码打错了。
+ */
+const demoAccounts = ['zhangsan', 'lisi', 'wangwu']
+
+/** 后台管理端地址：开发环境是 5174 */
+const adminUrl = `${window.location.protocol}//${window.location.hostname}:5174`
+
+function fillAccount(name: string) {
+  form.username = name
+  form.password = '123456'
+  formRef.value?.clearValidate()
+}
 
 const form = reactive({
   username: 'zhangsan',
@@ -296,6 +329,67 @@ async function onSubmit() {
 
 .tips p {
   margin: 0;
+}
+
+.tips-title {
+  font-size: 12px;
+  color: #9c928a;
+  margin-bottom: 8px !important;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chip {
+  border: 1px solid #e6d5c3;
+  background: #fffdfa;
+  color: #6b615a;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.chip:hover {
+  border-color: #e07a5f;
+  color: #e07a5f;
+  background: #fdf3ef;
+}
+
+.tips-note {
+  margin-top: 8px !important;
+  font-size: 12px;
+  color: #9c928a;
+}
+
+.tips-admin {
+  margin-top: 10px !important;
+  padding-top: 8px;
+  border-top: 1px dashed #eadfd2;
+  line-height: 1.7;
+}
+
+.tips-admin a {
+  color: #e07a5f;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.brand-role {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fdf3ef;
+  border: 1px solid #f0cdbf;
+  color: #e07a5f;
+  font-size: 11px;
+  vertical-align: 2px;
 }
 
 .back {

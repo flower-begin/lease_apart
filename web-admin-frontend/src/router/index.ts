@@ -111,8 +111,10 @@ const routes: RouteRecordRaw[] = [
           {
             path: 'user',
             name: 'SystemUser',
-            component: () => import('@/views/system/user.vue'),
-            meta: { title: '员工管理', perm: 'system:user:list' }
+            // 后台不再单独管「员工账号」，这个路径统一指向「用户管理」
+            //（user_info 全部注册用户），旧菜单缓存 / 手敲 URL 都不会再看到员工列表
+            component: () => import('@/views/user/index.vue'),
+            meta: { title: '用户管理', perm: 'user:list' }
           },
           {
             path: 'post',
@@ -167,10 +169,17 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
+  // 一个权限都没有：原因不是「这个页面没权限」，而是「这个账号没分配角色」，
+  // 两者提示必须区分，否则会误以为路由配错了。
+  if (!userStore.perms.length) {
+    next({ path: '/403', query: { reason: 'norole' } })
+    return
+  }
+
   // 页面级权限：手敲 URL 也进不去
   const perm = to.meta.perm as string | string[] | undefined
   if (perm && !userStore.hasPerm(perm)) {
-    next({ path: '/403' })
+    next({ path: '/403', query: { reason: 'denied', need: Array.isArray(perm) ? perm.join(' / ') : perm } })
     return
   }
 
