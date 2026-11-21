@@ -37,3 +37,22 @@ build/
 ### Mac OS ###
 .DS_Store
 .claude/
+
+### 前端 ###
+node_modules/
+dist/
+dist.zip
+.vite/
+.vite-*
+*.local
+.vercel/
+
+### 日志 / 上传 ###
+log/
+logs/
+*.log
+
+### 工具缓存 / 生成的中间文件 ###
+tools/.cache/
+# 由 tools/import-regions.mjs 生成（含剩余区县的全量补丁），不入库
+sql/region-generated.sql
