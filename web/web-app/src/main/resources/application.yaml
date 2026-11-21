@@ -63,7 +63,7 @@ web:
     # 必须登录的接口
     auth-include: /app/history/**,/app/appointment/**,/app/agreement/**,/app/info,/app/user/**
     # 完全放行的接口
-    auth-exclude: /app/login/**
+    auth-exclude: /app/login/**,/app/register
     # 可选登录：登录了会记录浏览历史，未登录也能访问
     optional-auth-include: /app/room/**,/app/apartment/**
 

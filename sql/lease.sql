@@ -1,5 +1,5 @@
 -- =====================================================================================
---  尚庭公寓（lease）数据库初始化脚本  ——  建表 + 初始化数据
+--  归心寓（lease）数据库初始化脚本  ——  建表 + 初始化数据
 --  目标数据库：MySQL 8.0+    字符集：utf8mb4 / utf8mb4_general_ci
 --
 --  本脚本完全依据仓库代码反推，未凭记忆编写：
@@ -569,8 +569,9 @@ DROP TABLE IF EXISTS `user_info`;
 CREATE TABLE `user_info`
 (
     `id`          bigint      NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `phone`       varchar(20) NOT NULL COMMENT '手机号码（用做登录用户名）',
-    `password`    varchar(64)          DEFAULT NULL COMMENT '密码',
+    `username`    varchar(50) NOT NULL COMMENT '登录账号（网页版/移动端账号密码登录用）',
+    `phone`       varchar(20) NOT NULL COMMENT '手机号码',
+    `password`    varchar(64)          DEFAULT NULL COMMENT '密码（MD5，32 位小写）',
     `avatar_url`  varchar(500)         DEFAULT NULL COMMENT '头像url',
     `nickname`    varchar(50)          DEFAULT NULL COMMENT '昵称',
     `status`      tinyint(1)  NOT NULL DEFAULT 1 COMMENT '账号状态(BaseStatus：0-禁用 1-正常)',
@@ -578,6 +579,7 @@ CREATE TABLE `user_info`
     `update_time` datetime    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `is_deleted`  tinyint(1)  NOT NULL DEFAULT 0 COMMENT '逻辑删除(0-未删除 1-已删除)',
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_username` (`username`),
     UNIQUE KEY `uk_phone` (`phone`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
@@ -769,12 +771,14 @@ VALUES (1, 'admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员', 0, '1
         'https://picsum.photos/seed/lease-cleaner/200/200', '负责望京、中关村片区', 3, 1);
 
 -- -------------------------------------------------------------------------------------
--- 2.8 App 端用户（手机号即登录名，App 端用短信验证码登录，password 仅占位）
+-- 2.8 App 端用户（账号 zhangsan / lisi / wangwu，密码统一 123456）
+--     账号密码登录：POST /app/login  { username, password }
+--     短信验证码登录（移动端）：POST /app/login  { phone, code }
 -- -------------------------------------------------------------------------------------
-INSERT INTO `user_info` (`id`, `phone`, `password`, `avatar_url`, `nickname`, `status`)
-VALUES (1, '13800000001', 'e10adc3949ba59abbe56e057f20f883e', 'https://picsum.photos/seed/lease-user1/200/200', '张三', 1),
-       (2, '13800000002', 'e10adc3949ba59abbe56e057f20f883e', 'https://picsum.photos/seed/lease-user2/200/200', '李四', 1),
-       (3, '13800000003', 'e10adc3949ba59abbe56e057f20f883e', 'https://picsum.photos/seed/lease-user3/200/200', '王五', 1);
+INSERT INTO `user_info` (`id`, `username`, `phone`, `password`, `avatar_url`, `nickname`, `status`)
+VALUES (1, 'zhangsan', '13800000001', 'e10adc3949ba59abbe56e057f20f883e', 'https://picsum.photos/seed/lease-user1/200/200', '张三', 1),
+       (2, 'lisi', '13800000002', 'e10adc3949ba59abbe56e057f20f883e', 'https://picsum.photos/seed/lease-user2/200/200', '李四', 1),
+       (3, 'wangwu', '13800000003', 'e10adc3949ba59abbe56e057f20f883e', 'https://picsum.photos/seed/lease-user3/200/200', '王五', 1);
 
 -- -------------------------------------------------------------------------------------
 -- 2.9 公寓（id 1~6，全部已发布）

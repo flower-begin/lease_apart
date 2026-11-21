@@ -39,9 +39,10 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="190" fixed="right">
+        <el-table-column label="操作" width="250" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openForm(row)">编辑</el-button>
+            <el-button v-perm="'system:user:assign'" link type="primary" @click="openRole(row)">角色</el-button>
             <el-button link :type="Number(row.status) === 1 ? 'danger' : 'success'" @click="toggle(row)">
               {{ Number(row.status) === 1 ? '禁用' : '启用' }}
             </el-button>
@@ -109,6 +110,21 @@
         <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
       </template>
     </el-drawer>
+
+    <!-- 分配角色 -->
+    <el-dialog v-model="roleVisible" :title="`分配角色 · ${roleUser?.name || roleUser?.username || ''}`" width="460px">
+      <el-checkbox-group v-model="selectedRoleIds" class="role-list">
+        <el-checkbox v-for="r in roleOptions" :key="r.id" :value="r.id!" class="role-item">
+          <span class="role-name">{{ r.name }}</span>
+          <el-tag size="small" type="info" effect="plain">{{ r.code }}</el-tag>
+        </el-checkbox>
+      </el-checkbox-group>
+      <div class="role-hint">角色决定该账号登录后能看到哪些菜单和按钮，保存后需重新登录生效。</div>
+      <template #footer>
+        <el-button @click="roleVisible = false">取消</el-button>
+        <el-button type="primary" :loading="roleSaving" @click="submitRole">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -117,9 +133,39 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { systemPostApi, systemUserApi } from '@/api'
+import { roleApi, systemPostApi, systemUserApi, userRoleApi } from '@/api'
 import { BASE_STATUS, SYSTEM_USER_TYPE, dictLabel, dictType } from '@/utils/dict'
-import type { SystemPost, SystemUser } from '@/types/api'
+import type { SysRole, SystemPost, SystemUser } from '@/types/api'
+
+/* ---------------------------------------------------- 分配角色（RBAC） */
+const roleVisible = ref(false)
+const roleSaving = ref(false)
+const roleUser = ref<SystemUser | null>(null)
+const roleOptions = ref<SysRole[]>([])
+const selectedRoleIds = ref<number[]>([])
+
+async function openRole(row: SystemUser) {
+  roleUser.value = row
+  roleVisible.value = true
+  if (!roleOptions.value.length) {
+    const res = await roleApi.list()
+    roleOptions.value = res.data.data || []
+  }
+  const res = await userRoleApi.roleIds(row.id!)
+  selectedRoleIds.value = res.data.data || []
+}
+
+async function submitRole() {
+  if (!roleUser.value) return
+  roleSaving.value = true
+  try {
+    await userRoleApi.assign(roleUser.value.id!, selectedRoleIds.value)
+    ElMessage.success('角色已保存，该账号重新登录后生效')
+    roleVisible.value = false
+  } finally {
+    roleSaving.value = false
+  }
+}
 
 const loading = ref(false)
 const saving = ref(false)
@@ -290,3 +336,24 @@ async function remove(row: SystemUser) {
   }
 }
 </script>
+
+<style scoped>
+.role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.role-item {
+  height: 32px;
+  margin-right: 0;
+}
+.role-name {
+  margin-right: 8px;
+}
+.role-hint {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #9c928a;
+  line-height: 1.6;
+}
+</style>

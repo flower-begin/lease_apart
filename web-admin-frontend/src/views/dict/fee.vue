@@ -303,7 +303,7 @@ async function removeValue(row: FeeValue) {
 
 <style scoped>
 .key-active {
-  color: #409eff;
+  color: #e07a5f;
   font-weight: 600;
 }
 .page-title {

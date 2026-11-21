@@ -1,11 +1,12 @@
 # =============================================================================
-#  尚庭公寓（lease）一键启动
+#  归心寓（lease）一键启动
 #
-#  会打开 4 个 PowerShell 窗口：
+#  会打开 5 个 PowerShell 窗口：
 #    8080  web-admin          后台管理接口
 #    8081  web-app            用户端接口
 #    5174  web-admin-frontend 后台管理前端
-#    8888  rentHouseH5        用户端 H5（官方版，优先使用）
+#    8888  web-app-frontend   用户端 H5（官方 Vant 版）
+#    5175  web-app-pc         用户端网页版（PC，Element Plus）
 #
 #  用户端 H5 的查找顺序（可用 -AppUiPath 强制指定）：
 #    ① 本项目下的 rentHouseH5\        ← 还没跑 finalize-web-app 时的位置
@@ -166,6 +167,15 @@ if (-not (Test-Path (Join-Path $appUi 'node_modules'))) {
 }
 
 # -----------------------------------------------------------------------------
+# 2c. 用户端网页版（PC）
+# -----------------------------------------------------------------------------
+$pcUi = Join-Path $root 'web-app-pc'
+$hasPcUi = Test-Path (Join-Path $pcUi 'package.json')
+if ($hasPcUi) {
+    Write-Host "      用户端网页版: $pcUi （端口 5175）" -ForegroundColor Green
+}
+
+# -----------------------------------------------------------------------------
 # 3. 后端依赖安装（model / common 必须先 install，否则单独 spring-boot:run 解析不到）
 # -----------------------------------------------------------------------------
 $modelJar = Join-Path $root 'model\target\model-1.0-SNAPSHOT.jar'
@@ -199,6 +209,7 @@ if (-not $SkipInstall) {
     $needInstall = @()
     if (-not (Test-Path (Join-Path $adminUi 'node_modules'))) { $needInstall += $adminUi }
     if (-not (Test-Path (Join-Path $appUi 'node_modules'))) { $needInstall += $appUi }
+    if ($hasPcUi -and -not (Test-Path (Join-Path $pcUi 'node_modules'))) { $needInstall += $pcUi }
 
     foreach ($fe in $needInstall) {
         Write-Host "[4/5] $fe 缺少依赖，执行 npm install ..." -ForegroundColor Cyan
@@ -241,6 +252,11 @@ Start-ServiceWindow -Title 'lease :: admin-ui   (5174)' `
 Start-ServiceWindow -Title "lease :: app-ui     ($appPort)" `
     -WorkDir $appUi -Command 'npm run dev'
 
+if ($hasPcUi) {
+    Start-ServiceWindow -Title 'lease :: pc-ui      (5175)' `
+        -WorkDir $pcUi -Command 'npm run dev'
+}
+
 # -----------------------------------------------------------------------------
 # 摘要
 # -----------------------------------------------------------------------------
@@ -251,6 +267,9 @@ Write-Host ("=" * 70) -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  后台管理   http://localhost:5174    账号 admin / 123456" -ForegroundColor White
 Write-Host "  用户端 H5  http://localhost:$appPort    验证码看 8081 控制台，或用 123456" -ForegroundColor White
+if ($hasPcUi) {
+    Write-Host "  用户端网页 http://localhost:5175    账号 zhangsan / 密码 123456" -ForegroundColor White
+}
 Write-Host ""
 Write-Host "  接口文档   http://localhost:8080/doc.html   （后台）" -ForegroundColor Gray
 Write-Host "             http://localhost:8081/doc.html   （用户端）" -ForegroundColor Gray

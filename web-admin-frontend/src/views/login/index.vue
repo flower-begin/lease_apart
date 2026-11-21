@@ -3,9 +3,9 @@
     <!-- 左侧品牌区（窄屏隐藏） -->
     <div class="login-left">
       <div class="brand">
-        <div class="brand-logo">🏠</div>
-        <h1 class="brand-title">尚庭公寓</h1>
-        <p class="brand-sub">SHANGTING APARTMENT · 后台管理系统</p>
+        <img class="brand-logo" src="/logo.svg" alt="归心寓" />
+        <h1 class="brand-title">归心寓</h1>
+        <p class="brand-sub">GUIXINYU · 后台管理系统</p>
         <ul class="brand-points">
           <li>公寓 / 房间 / 预约 / 租约一体化管理</li>
           <li>省市区、标签、配套、杂费全维度配置</li>
@@ -26,7 +26,7 @@
       >
         <div class="form-header">
           <div class="title">hello !</div>
-          <div class="title-tips">欢迎来到尚庭公寓后台管理！</div>
+          <div class="title-tips">欢迎来到归心寓后台管理！</div>
         </div>
 
         <el-form-item prop="username">
@@ -176,9 +176,9 @@ async function submitForm() {
   height: 100vh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 15% 20%, rgb(24 144 255 / 35%), transparent 45%),
-    radial-gradient(circle at 85% 75%, rgb(65 184 130 / 25%), transparent 45%),
-    linear-gradient(135deg, #001529 0%, #0a2d4d 45%, #0b3d6b 100%);
+    radial-gradient(circle at 15% 20%, rgb(224 122 95 / 30%), transparent 45%),
+    radial-gradient(circle at 85% 75%, rgb(230 213 195 / 22%), transparent 45%),
+    linear-gradient(135deg, #3e3229 0%, #5d4b3c 48%, #8a7057 100%);
 }
 
 /* ---------- 左侧品牌 ---------- */
@@ -190,7 +190,9 @@ async function submitForm() {
   color: #fff;
 }
 .brand-logo {
-  font-size: 46px;
+  width: 104px;
+  height: 104px;
+  display: block;
   margin-bottom: 12px;
 }
 .brand-title {
@@ -216,7 +218,7 @@ async function submitForm() {
 .brand-points li::before {
   content: '·';
   margin-right: 8px;
-  color: #1890ff;
+  color: #f2cc8f;
   font-weight: 700;
 }
 
@@ -272,7 +274,7 @@ async function submitForm() {
 }
 .login-form :deep(.el-form-item__error) {
   padding-left: 4px;
-  color: #ff7875;
+  color: #ffd2c4;
 }
 
 .captcha-box {
@@ -281,7 +283,7 @@ async function submitForm() {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #fff;
+  background: #fffdfa;
   border-radius: 4px;
   cursor: pointer;
 }

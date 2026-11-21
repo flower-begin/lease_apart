@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 @Tag(name = "地区信息")
 @RestController
@@ -37,10 +40,39 @@ public class RegionController {
     @Autowired
     private DistrictInfoService districtInfoService;
 
+    /**
+     * 中文拼音排序器。
+     * <p>
+     * 为什么不在 SQL 里排序：数据库里省/市/区的 id 是「先有种子数据、后补全量」拼出来的，
+     * 按 id 排会把后来导入的省份全都排到末尾，前端下拉框最上面永远是老的 4 个，
+     * 看起来就像「导入没生效」。这里统一按中文拼音排序，行为稳定、跟 id 无关。
+     */
+    private static final Collator CN_COLLATOR = Collator.getInstance(Locale.CHINA);
+
+    private static <T> List<T> sortedByName(List<T> list, Function<T, String> nameGetter) {
+        if (list == null || list.isEmpty()) {
+            return list;
+        }
+        List<T> copy = new ArrayList<>(list);
+        copy.sort((x, y) -> {
+            String a = nameGetter.apply(x);
+            String b = nameGetter.apply(y);
+            if (a == null) {
+                return b == null ? 0 : 1;
+            }
+            if (b == null) {
+                return -1;
+            }
+            return CN_COLLATOR.compare(a, b);
+        });
+        return copy;
+    }
+
     @Operation(summary = "查询省份信息列表")
     @GetMapping("province/list")
     public Result<List<ProvinceInfo>> listProvince() {
-        return Result.ok(provinceInfoService.list());
+        List<ProvinceInfo> list = provinceInfoService.list();
+        return Result.ok(sortedByName(list, ProvinceInfo::getName));
     }
 
     @Operation(summary = "根据省份id查询城市信息列表")
@@ -48,7 +80,8 @@ public class RegionController {
     public Result<List<CityInfo>> listCityInfoByProvinceId(@RequestParam Long id) {
         LambdaQueryWrapper<CityInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CityInfo::getProvinceId, id);
-        return Result.ok(cityInfoService.list(wrapper));
+        List<CityInfo> list = cityInfoService.list(wrapper);
+        return Result.ok(sortedByName(list, CityInfo::getName));
     }
 
     @GetMapping("district/listByCityId")
@@ -56,18 +89,20 @@ public class RegionController {
     public Result<List<DistrictInfo>> listDistrictInfoByCityId(@RequestParam Long id) {
         LambdaQueryWrapper<DistrictInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DistrictInfo::getCityId, id);
-        return Result.ok(districtInfoService.list(wrapper));
+        List<DistrictInfo> list = districtInfoService.list(wrapper);
+        return Result.ok(sortedByName(list, DistrictInfo::getName));
     }
 
     /**
      * 一次返回「省 → 市 → 区」的完整树，官方 H5 的省市区选择器用这个接口。
+     * 三级都按中文拼音排序。
      */
     @Operation(summary = "查询省市区树形结构")
     @GetMapping("listAsTree")
     public Result<List<RegionNodeVo>> listAsTree() {
-        List<ProvinceInfo> provinces = provinceInfoService.list();
-        List<CityInfo> cities = cityInfoService.list();
-        List<DistrictInfo> districts = districtInfoService.list();
+        List<ProvinceInfo> provinces = sortedByName(provinceInfoService.list(), ProvinceInfo::getName);
+        List<CityInfo> cities = sortedByName(cityInfoService.list(), CityInfo::getName);
+        List<DistrictInfo> districts = sortedByName(districtInfoService.list(), DistrictInfo::getName);
 
         // 先按父级 id 分组，避免三层循环
         Map<Long, List<CityInfo>> citiesByProvince = new HashMap<>();

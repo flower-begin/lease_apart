@@ -16,6 +16,7 @@ import type {
   FeeValue,
   LabelInfo,
   LeaseTerm,
+  MenuVo,
   PageResult,
   PaymentType,
   ProvinceInfo,
@@ -26,6 +27,7 @@ import type {
   SystemPost,
   SystemUser,
   SystemUserInfoVo,
+  SysRole,
   UserInfo
 } from '@/types/api'
 
@@ -134,6 +136,31 @@ export const systemPostApi = {
   remove: (id: number) => request.delete<ApiResult>('/system/post/deleteById', { params: { id } }),
   updateStatus: (id: number, status: number) =>
     request.post<ApiResult>('/system/post/updateStatusByPostId', null, { params: { id, status } })
+}
+
+/* ------------------------------------------------------------ 系统-角色（RBAC） */
+export const roleApi = {
+  list: () => request.get<ApiResult<SysRole[]>>('/system/role/list'),
+  save: (data: SysRole) => request.post<ApiResult>('/system/role/saveOrUpdate', data),
+  remove: (id: number) => request.delete<ApiResult>('/system/role/deleteById', { params: { id } }),
+  menuIds: (id: number) => request.get<ApiResult<number[]>>('/system/role/menuIds', { params: { id } }),
+  assignMenu: (roleId: number, menuIds: number[]) =>
+    request.put<ApiResult>('/system/role/assignMenu', { roleId, menuIds }),
+  updateStatus: (id: number, status: number) =>
+    request.post<ApiResult>('/system/role/updateStatus', null, { params: { id, status } })
+}
+
+/* ------------------------------------------------------------ 系统-菜单权限 */
+export const menuApi = {
+  tree: () => request.get<ApiResult<MenuVo[]>>('/system/menu/tree')
+}
+
+/* ------------------------------------------------------------ 系统-员工角色 */
+export const userRoleApi = {
+  roles: (id: number) => request.get<ApiResult<SysRole[]>>('/system/user/roles', { params: { id } }),
+  roleIds: (id: number) => request.get<ApiResult<number[]>>('/system/user/roleIds', { params: { id } }),
+  assign: (userId: number, roleIds: number[]) =>
+    request.put<ApiResult>('/system/user/assignRole', { userId, roleIds })
 }
 
 /* -------------------------------------------------------------- 字典项 */

@@ -227,9 +227,41 @@ export interface SystemUser {
   postName?: string
 }
 
+export interface MenuVo {
+  id: number
+  parentId?: number
+  name: string
+  /** 1-目录 2-菜单 3-按钮 */
+  type: number
+  path?: string
+  icon?: string
+  perms?: string
+  sort?: number
+  children?: MenuVo[]
+}
+
+export interface SysRole {
+  id?: number
+  name: string
+  code: string
+  description?: string
+  /** ALL-全部 STORE-本门店 SELF-仅本人 */
+  dataScope?: string
+  sort?: number
+  status?: number
+}
+
 export interface SystemUserInfoVo {
+  id?: number
+  username?: string
   name?: string
   avatarUrl?: string
+  /** 角色编码，如 ['super_admin'] */
+  roles?: string[]
+  /** 权限串，超管为 ['*'] */
+  perms?: string[]
+  /** 可见菜单树 */
+  menus?: MenuVo[]
 }
 
 export interface CaptchaVo {

@@ -3,9 +3,9 @@
     <!-- ============ 侧边栏 ============ -->
     <aside class="layout-sidebar" :class="{ 'is-collapse': collapsed }">
       <div class="logo">
-        <span class="logo-icon">🏠</span>
+        <img class="logo-icon" src="/logo.svg" alt="归心寓" />
         <transition name="fade">
-          <span v-show="!collapsed" class="logo-title">尚庭公寓管理</span>
+          <span v-show="!collapsed" class="logo-title">归心寓</span>
         </transition>
       </div>
 
@@ -14,13 +14,13 @@
           :default-active="activeMenu"
           :collapse="collapsed"
           :collapse-transition="false"
-          background-color="#001529"
+          background-color="#3e3229"
           text-color="rgba(255,255,255,0.95)"
           active-text-color="#fff"
           router
           unique-opened
         >
-          <template v-for="item in menus" :key="item.path">
+          <template v-for="item in menus" :key="item.fullPath">
             <el-sub-menu v-if="item.children.length" :index="item.fullPath">
               <template #title>
                 <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
@@ -129,7 +129,7 @@
 
       <!-- 页脚 55px -->
       <footer class="layout-footer">
-        Copyright © {{ year }} 尚庭公寓 · 后台管理系统
+        Copyright © {{ year }} 归心寓 · 后台管理系统
       </footer>
     </div>
 
@@ -174,6 +174,7 @@ interface MenuChild {
 }
 
 interface MenuItem {
+  id: number | string
   path: string
   fullPath: string
   title: string
@@ -187,24 +188,57 @@ function joinPath(parent: string, child?: string) {
   return `${base}/${child}`.replace(/\/+/g, '/')
 }
 
-/** 一级菜单 = 布局路由的 children 中带 meta.title 的项；这里收敛成强类型，避免模板里出现 unknown */
+/**
+ * 侧边栏菜单：优先用后端按权限过滤后的菜单树（sys_menu + sys_role_menu）。
+ * 目录节点没有真实路由，用 `dir-<id>` 当 el-sub-menu 的 index，避免多个目录都用 '/' 撞 key。
+ * 拿不到后端菜单时回退到静态路由，并按 meta.perm 再过滤一遍。
+ */
 const menus = computed<MenuItem[]>(() => {
+  const fromServer = userStore.menus || []
+  if (fromServer.length) {
+    return fromServer
+      .map<MenuItem>(m => {
+        const isDir = m.type === 1
+        const dirKey = `dir-${m.id}`
+        return {
+          id: m.id,
+          path: isDir ? dirKey : m.path || '',
+          fullPath: isDir ? dirKey : m.path || '',
+          title: m.name,
+          icon: m.icon || '',
+          children: (m.children || [])
+            .filter(c => c.type === 2 && Boolean(c.path))
+            .map(c => ({ path: c.path!, fullPath: c.path!, title: c.name }))
+        }
+      })
+      // 目录下一个可见菜单都没有，就不显示这个目录
+      .filter(m => m.children.length > 0 || !m.path.startsWith('dir-'))
+  }
+
   const layout = router.options.routes.find(r => r.path === '/')
-  return (layout?.children || [])
+  const items = (layout?.children || [])
     .filter(child => Boolean(child.meta?.title))
-    .map(child => ({
+    .filter(child => userStore.hasPerm(child.meta?.perm as string | string[] | undefined))
+    .map<MenuItem>(child => ({
+      id: child.path,
       path: child.path,
       fullPath: joinPath(child.path),
       title: String(child.meta?.title ?? ''),
       icon: String(child.meta?.icon ?? ''),
       children: (child.children || [])
         .filter(grand => Boolean(grand.meta?.title))
+        .filter(grand => userStore.hasPerm(grand.meta?.perm as string | string[] | undefined))
         .map(grand => ({
           path: grand.path,
           fullPath: joinPath(child.path, grand.path),
           title: String(grand.meta?.title ?? '')
         }))
     }))
+
+  return items.filter(item => {
+    const src = (layout?.children || []).find(c => c.path === item.path)
+    return !src?.children?.length || item.children.length > 0
+  })
 })
 
 const activeMenu = computed(() => route.path)
@@ -324,11 +358,11 @@ async function onCommand(command: string) {
   --navbar-height: 60px;
   --tabsbar-height: 55px;
   --footer-height: 55px;
-  --menu-bg: #001529;
-  --menu-bg-active: #1890ff;
-  --menu-sub-bg: #000c17;
-  --content-bg: #f0f2f5;
-  --base-shadow: 0 1px 4px rgb(0 21 41 / 8%);
+  --menu-bg: #3e3229;
+  --menu-bg-active: #e07a5f;
+  --menu-sub-bg: #332a22;
+  --content-bg: #f9f7f2;
+  --base-shadow: 0 1px 4px rgb(70 55 40 / 10%);
   position: relative;
   width: 100%;
   height: 100vh;
@@ -361,11 +395,13 @@ async function onCommand(command: string) {
   padding: 0 18px;
   white-space: nowrap;
   border-bottom: 1px solid rgb(255 255 255 / 6%);
-  background: #002140;
+  background: #332a22;
 }
 .logo-icon {
-  font-size: 22px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
+  display: block;
 }
 .logo-title {
   font-size: 16px;
@@ -392,7 +428,7 @@ async function onCommand(command: string) {
 }
 .layout-sidebar :deep(.el-menu-item:hover),
 .layout-sidebar :deep(.el-sub-menu__title:hover) {
-  background-color: #0b2740 !important;
+  background-color: #4a3c31 !important;
 }
 .layout-sidebar :deep(.el-menu-item.is-active) {
   background-color: var(--menu-bg-active) !important;
@@ -448,7 +484,7 @@ async function onCommand(command: string) {
 }
 .action-icon:hover {
   background: #f6f6f6;
-  color: #1890ff;
+  color: #e07a5f;
 }
 
 .user {
@@ -507,13 +543,13 @@ async function onCommand(command: string) {
   background: #b4bccc;
 }
 .tab-item:hover {
-  color: #1890ff;
-  border-color: #1890ff;
+  color: #e07a5f;
+  border-color: #e07a5f;
 }
 .tab-item.active {
   color: #fff;
-  background: #1890ff;
-  border-color: #1890ff;
+  background: #e07a5f;
+  border-color: #e07a5f;
 }
 .tab-item.active .dot {
   background: #fff;

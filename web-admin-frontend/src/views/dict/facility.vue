@@ -202,7 +202,7 @@ async function remove(row: FacilityInfo) {
   width: 100%;
 }
 .icon-preview {
-  color: #409eff;
+  color: #e07a5f;
   flex-shrink: 0;
 }
 .form-tip {

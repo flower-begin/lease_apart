@@ -1,19 +1,40 @@
 /* =============================================================================
- * 主题变量：对齐 rentHouseAdmin（主色 #1890ff）
+ *  归心寓 · 后台管理 —— 奶油原木风
+ *
+ *  60%  主色：米白 #F9F7F2 / 暖白 #FFFDFA
+ *  30%  辅助色：奶茶 #E6D5C3 / 浅木 #D4B895（侧边栏用深木色 #3E3229）
+ *  10%  点缀色：陶土橙 #E07A5F / 沙金 #F2CC8F
  * ========================================================================== */
-:root {
-  --app-bg: #f0f2f5;
-  --app-radius: 4px;
-  --app-shadow: 0 1px 4px rgb(0 21 41 / 8%);
 
-  /* Element Plus 主色替换 */
-  --el-color-primary: #1890ff;
-  --el-color-primary-light-3: #46a6ff;
-  --el-color-primary-light-5: #8cc5ff;
-  --el-color-primary-light-7: #b3d8ff;
-  --el-color-primary-light-8: #c6e2ff;
-  --el-color-primary-light-9: #e6f2ff;
-  --el-color-primary-dark-2: #0070cc;
+:root {
+  --app-bg: #f9f7f2;
+  --app-card: #fffdfa;
+  --app-radius: 6px;
+  --app-shadow: 0 1px 4px rgb(70 55 40 / 10%);
+  --app-border: #eadfd2;
+
+  --wood: #e6d5c3;
+  --wood-dark: #d4b895;
+  --accent: #e07a5f;
+  --accent-deep: #c9654c;
+
+  /* Element Plus 主色替换成陶土橙 */
+  --el-color-primary: #e07a5f;
+  --el-color-primary-light-3: #e9a28f;
+  --el-color-primary-light-5: #f0bcaf;
+  --el-color-primary-light-7: #f6d7cf;
+  --el-color-primary-light-8: #f9e4df;
+  --el-color-primary-light-9: #fcf2ef;
+  --el-color-primary-dark-2: #b3624c;
+
+  --el-text-color-primary: #3d3733;
+  --el-text-color-regular: #6b615a;
+  --el-border-color: #eadfd2;
+  --el-border-color-light: #f0e6da;
+  --el-border-color-lighter: #f5ede4;
+  --el-fill-color-blank: #fffdfa;
+  --el-bg-color: #fffdfa;
+  --el-bg-color-overlay: #fffdfa;
 }
 
 * {
@@ -32,7 +53,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'PingFang SC', 'Microsoft YaHei', sans-serif;
   font-size: 14px;
-  color: #303133;
+  color: #3d3733;
   background: var(--app-bg);
 }
 
@@ -44,10 +65,11 @@ body {
 }
 
 .page-card {
-  background: #fff;
+  background: var(--app-card);
   border-radius: var(--app-radius);
   box-shadow: var(--app-shadow);
   padding: 16px;
+  border: 1px solid rgb(234 223 210 / 70%);
 }
 
 .page-card + .page-card {
@@ -73,12 +95,16 @@ body {
 }
 
 /* =============================================================================
- * 表格 / 分页 —— 贴近 rentHouseAdmin 的观感
+ * 表格 / 分页
  * ========================================================================== */
 .el-table th.el-table__cell {
-  background: #f8f8f9 !important;
-  color: #515a6e;
+  background: #fbf6ee !important;
+  color: #6b615a;
   font-weight: 600;
+}
+
+.el-table td.el-table__cell {
+  background: var(--app-card);
 }
 
 .el-table--border {
@@ -95,15 +121,16 @@ body {
  * 工具类
  * ========================================================================== */
 .text-muted {
-  color: #909399;
+  color: #9c928a;
 }
 
 .text-danger {
-  color: #f34d37;
+  color: #c9654c;
 }
 
+/* 成功态用偏暖的橄榄绿，避免和陶土橙打架 */
 .text-success {
-  color: #41b882;
+  color: #6f9a62;
 }
 
 .thumb {
@@ -111,7 +138,7 @@ body {
   height: 42px;
   border-radius: var(--app-radius);
   object-fit: cover;
-  background: #f5f7fa;
+  background: #f3efea;
 }
 
 .avatar {
@@ -119,7 +146,7 @@ body {
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  background: #f5f7fa;
+  background: #f3efea;
 }
 
 .el-table .cell {
@@ -141,7 +168,7 @@ body {
   height: 70px;
   border-radius: var(--app-radius);
   overflow: hidden;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--app-border);
 }
 
 .image-wall .image-item img {
@@ -160,7 +187,7 @@ body {
   text-align: center;
   font-size: 12px;
   color: #fff;
-  background: rgb(0 0 0 / 55%);
+  background: rgb(61 55 51 / 55%);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -171,20 +198,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #909399;
-  background: #fafafa;
-  border: 1px dashed #c0c4cc;
+  color: #9c928a;
+  background: #fbf6ee;
+  border: 1px dashed var(--wood-dark);
   border-radius: var(--app-radius);
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 .image-wall .image-add:hover {
-  color: #1890ff;
-  border-color: #1890ff;
+  color: var(--accent);
+  border-color: var(--accent);
+  background: #fdf3ef;
 }
 
 /* =============================================================================
- * 滚动条（和侧边栏/标签栏配合）
+ * 滚动条
  * ========================================================================== */
 ::-webkit-scrollbar {
   width: 6px;
@@ -192,12 +221,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(144 147 153 / 35%);
+  background: rgb(160 140 120 / 35%);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(144 147 153 / 60%);
+  background: rgb(160 140 120 / 55%);
 }
 
 ::-webkit-scrollbar-track {

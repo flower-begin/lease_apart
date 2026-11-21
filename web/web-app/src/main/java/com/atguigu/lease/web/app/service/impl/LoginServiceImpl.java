@@ -14,6 +14,7 @@ import com.atguigu.lease.model.enums.BaseStatus;
 import com.atguigu.lease.web.app.service.LoginService;
 import com.atguigu.lease.web.app.service.UserInfoService;
 import com.atguigu.lease.web.app.vo.user.LoginVo;
+import com.atguigu.lease.web.app.vo.user.RegisterVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,10 @@ public class LoginServiceImpl implements LoginService {
 
     private static final java.util.regex.Pattern PHONE_PATTERN =
             java.util.regex.Pattern.compile("^1[3-9]\\d{9}$");
+
+    /** 登录账号：3~20 位字母、数字或下划线 */
+    private static final java.util.regex.Pattern USERNAME_PATTERN =
+            java.util.regex.Pattern.compile("^[A-Za-z0-9_]{3,20}$");
 
     @Override
     public void sendSms(String phone) throws Exception {
@@ -107,42 +112,43 @@ public class LoginServiceImpl implements LoginService {
     /**
      * 登录入口，支持两种方式，按传参自动区分：
      * <p>
-     * 1. 账号密码登录（移动端默认）：传 {@code phone + password}
-     * 2. 短信验证码登录（保留兼容）：传 {@code phone + code}
+     * 1. <b>账号 + 密码</b>（网页版 / 移动端默认）：传 {@code username + password}
+     * 2. 手机号 + 短信验证码（保留兼容）：传 {@code phone + code}
      * <p>
-     * 两者都传时以密码为准。
+     * 只要带了 username 或 password，就走账号密码登录。
      */
     @Override
     public String login(LoginVo loginVo) {
-        if (loginVo == null || !StringUtils.hasText(loginVo.getPhone())) {
-            throw new LeaseException(ResultCodeEnum.APP_LOGIN_PHONE_EMPTY);
-        }
-        if (!PHONE_PATTERN.matcher(loginVo.getPhone()).matches()) {
-            throw new LeaseException("手机号格式不正确", ResultCodeEnum.PARAM_ERROR.getCode());
+        if (loginVo == null) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_ACCOUNT_EMPTY);
         }
 
-        if (StringUtils.hasText(loginVo.getPassword())) {
-            return loginByPassword(loginVo);
+        if (StringUtils.hasText(loginVo.getUsername()) || StringUtils.hasText(loginVo.getPassword())) {
+            return loginByAccount(loginVo);
         }
         return loginBySms(loginVo);
     }
 
     /**
-     * 账号（手机号）+ 密码登录。密码在库里存的是 MD5，这里同样用 MD5 比对。
+     * 账号 + 密码登录。密码在库里存的是 MD5，这里同样用 MD5 比对。
      * 不走自动注册：密码登录必须账号已存在。
      */
-    private String loginByPassword(LoginVo loginVo) {
-        LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserInfo::getPhone, loginVo.getPhone());
-        UserInfo userInfo = userInfoService.getOne(wrapper);
-
-        // 用户不存在 / 没设过密码，统一提示，避免暴露手机号是否注册过
-        if (userInfo == null || !StringUtils.hasText(userInfo.getPassword())) {
-            throw new LeaseException(ResultCodeEnum.APP_LOGIN_ACCOUNT_ERROR);
+    private String loginByAccount(LoginVo loginVo) {
+        if (!StringUtils.hasText(loginVo.getUsername())) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_ACCOUNT_EMPTY);
+        }
+        if (!StringUtils.hasText(loginVo.getPassword())) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_PASSWORD_EMPTY);
         }
 
-        String encoded = Md5Util.md5Hex(loginVo.getPassword());
-        if (!encoded.equalsIgnoreCase(userInfo.getPassword())) {
+        LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserInfo::getUsername, loginVo.getUsername().trim());
+        UserInfo userInfo = userInfoService.getOne(wrapper);
+
+        // 账号不存在 / 没设过密码 / 密码错，统一提示，避免暴露账号是否存在
+        if (userInfo == null
+                || !StringUtils.hasText(userInfo.getPassword())
+                || !Md5Util.matches(loginVo.getPassword(), userInfo.getPassword())) {
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_ACCOUNT_ERROR);
         }
 
@@ -150,14 +156,88 @@ public class LoginServiceImpl implements LoginService {
             throw new LeaseException(ResultCodeEnum.APP_ACCOUNT_DISABLED_ERROR);
         }
 
-        log.info("用户 {} 使用账号密码登录成功", loginVo.getPhone());
+        log.info("账号 {} 密码登录成功（userId={}）", loginVo.getUsername(), userInfo.getId());
         return JwtUtil.createToken(userInfo.getId(), userInfo.getPhone());
     }
 
     /**
-     * 短信验证码登录（保留）。第一次用某个手机号登录会自动注册。
+     * 账号密码注册。校验通过后直接签发 token，前端可以注册完就进站。
+     * <p>
+     * 账号、手机号都必须全局唯一（数据库上也有 uk_username / uk_phone 唯一索引兜底）。
+     */
+    @Override
+    public String register(RegisterVo registerVo) {
+        if (registerVo == null) {
+            throw new LeaseException("注册信息不能为空", ResultCodeEnum.PARAM_ERROR.getCode());
+        }
+
+        // ---------- 1. 参数校验 ----------
+        String username = registerVo.getUsername() == null ? "" : registerVo.getUsername().trim();
+        String password = registerVo.getPassword() == null ? "" : registerVo.getPassword();
+        String phone = registerVo.getPhone() == null ? "" : registerVo.getPhone().trim();
+
+        if (!StringUtils.hasText(username)) {
+            throw new LeaseException("请输入账号", ResultCodeEnum.APP_LOGIN_ACCOUNT_EMPTY.getCode());
+        }
+        if (!USERNAME_PATTERN.matcher(username).matches()) {
+            throw new LeaseException("账号需为 3~20 位字母、数字或下划线",
+                    ResultCodeEnum.PARAM_ERROR.getCode());
+        }
+        if (!StringUtils.hasText(password)) {
+            throw new LeaseException("请输入密码", ResultCodeEnum.APP_LOGIN_PASSWORD_EMPTY.getCode());
+        }
+        if (password.length() < 6 || password.length() > 20) {
+            throw new LeaseException("密码长度需为 6~20 位", ResultCodeEnum.PARAM_ERROR.getCode());
+        }
+        if (!StringUtils.hasText(phone)) {
+            throw new LeaseException("请输入手机号", ResultCodeEnum.APP_LOGIN_PHONE_EMPTY.getCode());
+        }
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+            throw new LeaseException("手机号格式不正确", ResultCodeEnum.PARAM_ERROR.getCode());
+        }
+
+        // ---------- 2. 唯一性校验 ----------
+        LambdaQueryWrapper<UserInfo> byUsername = new LambdaQueryWrapper<>();
+        byUsername.eq(UserInfo::getUsername, username);
+        if (userInfoService.count(byUsername) > 0) {
+            throw new LeaseException(ResultCodeEnum.APP_REGISTER_USERNAME_EXIST);
+        }
+
+        LambdaQueryWrapper<UserInfo> byPhone = new LambdaQueryWrapper<>();
+        byPhone.eq(UserInfo::getPhone, phone);
+        if (userInfoService.count(byPhone) > 0) {
+            throw new LeaseException(ResultCodeEnum.APP_REGISTER_PHONE_EXIST);
+        }
+
+        // ---------- 3. 落库 ----------
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUsername(username);
+        userInfo.setPhone(phone);
+        userInfo.setPassword(Md5Util.md5Hex(password));
+        userInfo.setNickname(StringUtils.hasText(registerVo.getNickname())
+                ? registerVo.getNickname().trim()
+                : username);
+        // 头像留空，由各端用自带的默认头像兜底
+        userInfo.setAvatarUrl(null);
+        userInfo.setStatus(BaseStatus.ENABLE);
+        userInfoService.save(userInfo);
+
+        log.info("新用户注册成功：{}（手机号 {}）", username, phone);
+
+        // ---------- 4. 直接签发 token ----------
+        return JwtUtil.createToken(userInfo.getId(), userInfo.getPhone());
+    }
+
+    /**
+     * 手机号 + 短信验证码登录（保留）。第一次用某个手机号登录会自动注册。
      */
     private String loginBySms(LoginVo loginVo) {
+        if (!StringUtils.hasText(loginVo.getPhone())) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_PHONE_EMPTY);
+        }
+        if (!PHONE_PATTERN.matcher(loginVo.getPhone()).matches()) {
+            throw new LeaseException("手机号格式不正确", ResultCodeEnum.PARAM_ERROR.getCode());
+        }
         if (!StringUtils.hasText(loginVo.getCode())) {
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_CODE_EMPTY);
         }
@@ -181,6 +261,9 @@ public class LoginServiceImpl implements LoginService {
         if (userInfo == null) {
             userInfo = new UserInfo();
             userInfo.setPhone(loginVo.getPhone());
+            // username 是 NOT NULL + 唯一，自动注册时用手机号兜底，
+            // 之后也能用这个号做账号密码登录
+            userInfo.setUsername(loginVo.getPhone());
             userInfo.setAvatarUrl("https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg");
             userInfo.setNickname("用户" + loginVo.getPhone().substring(7));
             userInfo.setStatus(BaseStatus.ENABLE);

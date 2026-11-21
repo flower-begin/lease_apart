@@ -295,7 +295,7 @@ async function removeValue(row: AttrValue) {
 
 <style scoped>
 .key-active {
-  color: #409eff;
+  color: #e07a5f;
   font-weight: 600;
 }
 .page-title {

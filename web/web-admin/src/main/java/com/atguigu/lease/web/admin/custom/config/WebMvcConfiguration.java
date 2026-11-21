@@ -4,6 +4,7 @@ import com.atguigu.lease.web.admin.custom.converter.StringToBaseEnumConverterFac
 import com.atguigu.lease.web.admin.custom.converter.StringToItemTypeConverter;
 import com.atguigu.lease.web.admin.custom.converter.StringToReleaseStatusConverter;
 import com.atguigu.lease.web.admin.custom.interceptors.LoginInterceptor;
+import com.atguigu.lease.web.admin.custom.interceptors.PermissionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
     @Value("${upload.dir}")
     private String uploadDir;
+
+    @Autowired
+    private PermissionInterceptor permissionInterceptor;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -73,6 +77,12 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                 .addPathPatterns(includes)    // 放行地址
                 .excludePathPatterns(excludes)      // 拦截地址
                 .order(1);
+
+        // 接口级权限校验：必须在登录校验之后，token 已经验证过合法性
+        registry.addInterceptor(permissionInterceptor)
+                .addPathPatterns(includes)
+                .excludePathPatterns(excludes)
+                .order(2);
     }
 
 }

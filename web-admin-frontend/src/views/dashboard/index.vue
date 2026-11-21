@@ -89,10 +89,10 @@ const counts = ref({ apartments: 0, rooms: 0, appointments: 0, agreements: 0, us
 const apartmentRows = computed(() => apartments.value.slice(0, 6))
 
 const cards = computed(() => [
-  { label: '公寓总数', value: counts.value.apartments, icon: 'OfficeBuilding', bg: 'linear-gradient(135deg,#409eff,#79bbff)' },
-  { label: '房间总数', value: counts.value.rooms, icon: 'House', bg: 'linear-gradient(135deg,#67c23a,#95d475)' },
-  { label: '待看房预约', value: counts.value.appointments, icon: 'Calendar', bg: 'linear-gradient(135deg,#e6a23c,#f3c37a)' },
-  { label: '生效租约', value: counts.value.agreements, icon: 'Document', bg: 'linear-gradient(135deg,#f56c6c,#f89898)' }
+  { label: '公寓总数', value: counts.value.apartments, icon: 'OfficeBuilding', bg: 'linear-gradient(135deg,#c3a181,#e6d5c3)' },
+  { label: '房间总数', value: counts.value.rooms, icon: 'House', bg: 'linear-gradient(135deg,#e07a5f,#f2b39c)' },
+  { label: '待看房预约', value: counts.value.appointments, icon: 'Calendar', bg: 'linear-gradient(135deg,#e6b980,#f2cc8f)' },
+  { label: '生效租约', value: counts.value.agreements, icon: 'Document', bg: 'linear-gradient(135deg,#b3624c,#d68e78)' }
 ])
 
 onMounted(load)

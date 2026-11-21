@@ -1,4 +1,4 @@
-# 尚庭公寓（lease）
+# 归心寓（lease）
 
 一个完整的房屋租赁平台，包含 **后台管理系统**、**用户端（H5）** 和 **两个 Spring Boot 服务**。
 
@@ -15,6 +15,7 @@
 | `web/web-admin/` | **后台管理服务**（B 端接口，前缀 `/admin`） | 8080 | Spring Boot 3 + MyBatis-Plus + Knife4j |
 | `web/web-app/` | **用户端服务**（C 端接口，前缀 `/app`） | 8081 | Spring Boot 3 + MyBatis-Plus + Knife4j |
 | `web-app-frontend/` | **用户端 H5**（官方版，13 个页面；由 `rentHouseH5` 改名而来） | 8888 | Vue 3 + Vite + Vant 4 + Pinia + Less + Tailwind |
+| `web-app-pc/` | **用户端网页版**（PC，功能对齐 H5，账号密码登录） | 5175 | Vue 3 + Vite 5 + Element Plus + TS |
 | `web-admin-frontend/` | **后台管理界面**（视觉/布局按 `rentHouseAdmin` 规范重做） | 5174 | Vue 3 + Vite + Element Plus + TS |
 | `rentHouseAdmin/`（项目外，可选） | 官方后台模板，接口与本项目完全兼容，可替换上一行 | 5174 | Vue 3 + Vite + Element Plus + ECharts + TS |
 | `sql/lease.sql` | 建库建表 + 初始化数据（可重复执行） | — | MySQL 8 |
@@ -99,7 +100,13 @@ docker compose up -d
 - 公寓 6 个（望京SOHO / 中关村 / 回龙观 / 陆家嘴 / 天河 / 深圳湾）
 - 房间 12 间（每公寓 2 间）
 - 后台账号：`admin` / `123456`（另有 `operator`、`cleaner`，密码同）
-- App 测试用户：`13800000001` 张三、`13800000002` 李四、`13800000003` 王五
+- App 测试用户（账号 / 密码 `123456` / 手机号）：
+
+  | 账号 | 密码 | 手机号 | 昵称 |
+  | --- | --- | --- | --- |
+  | `zhangsan` | `123456` | 13800000001 | 张三 |
+  | `lisi` | `123456` | 13800000002 | 李四 |
+  | `wangwu` | `123456` | 13800000003 | 王五 |
 
 > ⚠️ 脚本开头是 `DROP TABLE IF EXISTS`，**会清空同名表**，不要在生产库执行。
 
@@ -109,6 +116,114 @@ docker compose up -d
 - `web/web-app/src/main/resources/application.yaml`
 
 默认都是 `root` / `123456`，按需修改。
+
+### 导入全国省市区
+
+`lease.sql` 里的省/市/区只是**演示种子**（4 省 / 7 市 / 16 区）。要全国数据，用下面这几个文件（都是幂等的，可以全跑）：
+
+| 文件 | 内容 | 怎么用 |
+| --- | --- | --- |
+| **`sql/region-all-in-one.sql`** ⭐ | **一步到位**：34 省 + 337 市 + 约 2880 区县，单文件、无临时表、无 `NOT EXISTS` | **只跑这一个就够**（Navicat 全选执行，或 `mysql ... < 它`） |
+| `sql/region-cleanup.sql` | 清理孤儿城市/区县 + 去重（重跑 `all-in-one` 之后兜底用） | 可选，跑完 all-in-one 再跑一次更干净 |
+| `sql/region-full.sql` | 34 省 + 337 地级市 + 317 区县（4 直辖市全量 + 27 省会 + 5 计划单列市） | 分步版第一步 |
+| `sql/region-districts-01.sql` | 江苏 84 / 浙江 67 / 山东 114 / 广东 102 = 367 条 | 分步版第二步 |
+| `sql/region-districts-02.sql` | 其余 23 个省级行政区的全部区县 | 分步版第三步 |
+| `sql/region-generated.sql` | 由脚本生成（不在仓库里）：全量 2877 区县 | 先跑 `.\tools\import-regions.bat` |
+
+**先用哪个？** 一般用 `region-full.sql` 就够了 —— 省份、城市是全国的，区县覆盖了所有直辖市和省会，选房筛选完全够用。
+如果你要**每个地级市都有区县**（全量 2877 个），再跑生成器。
+
+```powershell
+# 推荐：一条命令按顺序跑完 3 个 SQL（缺一不可）
+.\tools\import-all-regions.bat
+
+# 或者手动按顺序执行
+mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\region-full.sql
+mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\region-districts-01.sql
+mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\region-districts-02.sql
+
+# 要「每个地级市都有区县」的全量 2877 个，再跑生成器
+.\tools\import-regions.bat
+```
+
+> ⚠️ **三个文件必须都跑，顺序不能乱**：
+> `region-full.sql` 建省和市 → `-01` / `-02` 只补区县。
+> 只跑 `-02` 的话，省份还是只有种子那 4 个（因为它只插区县，依赖前面已经建好的省市）。
+
+**为什么是「幂等」的**：两个文件都是「临时表中转 → 删掉库里已存在的 → 只插入剩下的」：
+
+```sql
+CREATE TEMPORARY TABLE tmp_city (name VARCHAR(50), province_id INT);
+INSERT INTO tmp_city SELECT DISTINCT v.city, p.id FROM (...) v JOIN province_info p ON p.name = v.province;
+DELETE t FROM tmp_city t JOIN city_info c ON c.name = t.name AND c.province_id = t.province_id;
+INSERT INTO city_info (name, province_id, create_time, update_time, is_deleted)
+SELECT name, province_id, NOW(), NOW(), 0 FROM tmp_city;
+```
+
+- 已有的省/市/区**不会重复插入**，`id` 保持不变
+- 所以种子公寓里引用的 `province_id / city_id / district_id` **不会被破坏**
+- 可以反复执行，想跑几次跑几次
+- 用临时表中转而不是 `INSERT ... WHERE NOT EXISTS`，是为了避开 MySQL 的 1093 报错
+
+注意事项：
+
+| 项 | 说明 |
+| --- | --- |
+| `region-full.sql` | 纯 SQL，无任何依赖，Navicat / 命令行都行 |
+| `region-generated.sql` | 需要 Node.js 生成 + `mysql` 命令行导入；没装 mysql 就手动执行生成出来的 SQL |
+| 数据源下载失败 | bat 会试 4 个镜像；也可以手动下载 `pca-code.json` 放到 `tools\.cache\pca-code.json`，再 `node tools/import-regions.mjs --offline` |
+| 占位城市名 | 生成器会把 `市辖区` / `县` 改写成省份名，这样「北京市 → 北京市 → 朝阳区」更自然 |
+| 生成物 | `sql/region-generated.sql` 和 `tools/.cache/` 已在 `.gitignore`，可随时删掉重建 |
+
+> 幂等设计的意义：你现在的库里已经有 6 个公寓引用了「北京市 / 上海市 / 广东省 / 浙江省」这些记录，
+> 如果直接 `DELETE` 再全量导入，`id` 会全变，公寓的地区筛选就错位了。所以只能增量补。
+
+> 执行完自查：
+> ```sql
+> SELECT (SELECT COUNT(*) FROM province_info) AS 省,
+>        (SELECT COUNT(*) FROM city_info)     AS 市,
+>        (SELECT COUNT(*) FROM district_info) AS 区县;
+> ```
+> 手写版预期：**省 34 / 市 337 / 区县 317**（种子里的 4 省 7 市 16 区会被去重合并进去）。
+
+---
+
+### 初始化角色权限（RBAC）
+
+后台的角色/菜单/按钮权限是**独立升级脚本**，建库之后要单独执行一次：
+
+```powershell
+mysql -uroot -p123456 --default-character-set=utf8mb4 lease < sql\upgrade-02-rbac.sql
+```
+
+它新增 4 张表（`sys_role` / `sys_menu` / `sys_role_menu` / `sys_user_role`）并写入种子数据：
+
+| 角色 | 编码 | 能看到的菜单 |
+| --- | --- | --- |
+| 超级管理员 | `super_admin` | 全部（含系统管理 · 角色管理） |
+| 运营专员 | `ops` | 除「系统管理」外全部 |
+| 门店店长 | `manager` | 首页 / 公寓只读 / 房间 / 预约 / 租约 / 用户只读 / 员工只读 |
+| 经纪人 | `agent` | 首页 / 公寓·房间只读 / 预约 / 租约 / 用户只读 |
+| 财务 | `finance` | 首页 / 租约只读 / 用户只读 |
+| 维修保洁 | `maintainer` | 只有首页 |
+
+默认账号对应关系：`admin → 超级管理员`、`operator → 运营专员`、`cleaner → 维修保洁`。
+
+> 完整的「功能补充清单 / 角色定义 / 页面权限矩阵」见 [docs/RBAC-权限设计.md](docs/RBAC-权限设计.md)。
+
+**三层鉴权**：
+
+1. **菜单**：登录后 `/admin/info` 返回 `menus`，侧边栏只渲染有权限的菜单
+2. **路由**：前端守卫按 `meta.perm` 拦手敲 URL，无权限跳 `/403`
+3. **接口**：Controller 上 `@RequirePermission("apartment:save")`，后端拦截器校验，绕过前端也调不通
+
+给老接口加权限只需要一行注解：
+
+```java
+@RequirePermission("apartment:save")
+@PostMapping("saveOrUpdate")
+public Result saveOrUpdate(@RequestBody ApartmentSubmitVo vo) { ... }
+```
 
 ---
 
@@ -221,18 +336,18 @@ npm run dev
 
 打开 <http://localhost:5174>，用 `admin` / `123456` 登录。
 
-已对齐的设计规范（取自 rentHouseAdmin 的 `variable.scss`）：
+已对齐的布局规范（取自 rentHouseAdmin 的 `variable.scss`），**配色已改为奶油原木风**：
 
 | 项 | 值 |
 | --- | --- |
-| 主色 | `#1890ff` |
-| 侧边栏背景 | `#001529`（选中项 `#1890ff`，二级菜单 `#000c17`） |
+| 点缀色（CTA / 选中态） | `#E07A5F` 陶土橙 |
+| 侧边栏背景 | `#3E3229` 深木色（选中项 `#E07A5F`，二级菜单 `#332A22`，hover `#4A3C31`） |
 | 侧边栏宽度 | 256px / 折叠 64px，Logo 区高 75px |
 | 顶部导航条 | 60px（折叠按钮 + 面包屑 + 刷新 + 全屏 + 用户下拉） |
 | 多标签页 | 55px，可关闭 / 关闭其他 / 关闭全部 |
-| 内容区 | `padding: 20px`，背景 `#f0f2f5` |
+| 内容区 | `padding: 20px`，背景 `#F9F7F2` 米白 |
 | 页脚 | 55px，居中版权 |
-| 圆角 / 阴影 | `4px` / `0 1px 4px rgb(0 21 41 / 8%)` |
+| 圆角 / 阴影 | `6px` / `0 1px 4px rgb(70 55 40 / 10%)` |
 | 登录页 | 左品牌 + 右玻璃拟态登录卡，`hello !` 大标题、48px 输入框、整宽登录按钮 |
 
 #### 也可以换成官方 rentHouseAdmin（可选）
@@ -263,13 +378,36 @@ npm run dev
 
 > rentHouseAdmin 内置的 mock 全部挂在 `/mock/**` 前缀下，**不会拦截真实接口**。
 
-### 3. 代理说明
+### 3. 用户端网页版（`web-app-pc`，端口 5175）
+
+移动端 H5 的**桌面版**，功能对齐、配色一致，登录方式为**账号 + 密码**。
+
+```powershell
+cd web-app-pc
+npm install
+npm run dev
+```
+
+打开 <http://localhost:5175>，用 `zhangsan` / `123456` 登录；也可以点「**立即注册**」新注册一个账号（账号 + 密码 + 手机号，注册成功自动登录）。
+
+| 项 | 说明 |
+| --- | --- |
+| 技术栈 | Vue 3 + Vite 5 + TypeScript + Element Plus + Pinia |
+| 路由 | **hash 模式**（`/#/search`），刷新 / 静态托管都不会 404 |
+| 主色 | `#E07A5F` 陶土橙（与 H5 的 `--van-primary-color` 一致），辅助色 `#E6D5C3` 奶茶，页面底色 `#F9F7F2` 米白，卡片 10px 圆角 |
+| 页面 | 找房（地区级联 + 租金 + 付款方式 + 排序 + 关键字 + 分页）、公寓详情、房间详情、预约看房、我的预约、签约、我的租约、租约详情、浏览历史、个人中心（改昵称 + 传头像）、登录、404 |
+| 未移植 | H5 的 `圈子` / `消息` 是模板假页面，后端无接口，未移植 |
+
+> 登录走 `POST /app/login` 传 `{ phone, password }`，与移动端共用同一个接口（移动端传 `code` 走验证码登录）。
+
+### 4. 代理说明
 
 三个前端的接口都走 vite 代理，所以不用处理跨域：
 
 | 前端 | 代理前缀 | 转发到 | 配置文件 |
 | --- | --- | --- | --- |
 | web-app-frontend（H5） | `/app/**` | `VITE_APP_BASE_URL`（默认 `http://localhost:8081`） | `.env.development` |
+| web-app-pc（网页版） | `/app/**`、`/upload/**` | `http://localhost:8081` | `vite.config.ts` |
 | rentHouseAdmin | `/admin/**` | `VITE_APP_BASE_URL`（默认 `http://localhost:8080`） | `.env.development` |
 | web-admin-frontend | `/api/**` | `http://localhost:8080/admin/**` | `vite.config.ts` |
 | web-admin-frontend | `/upload/**` | `http://localhost:8080/upload/**` | `vite.config.ts` |
@@ -310,7 +448,7 @@ VITE_PORT=5174                          # 前端端口
 
 > 下表同时适用于本项目自带的 `web-admin-frontend` 和官方 `rentHouseAdmin`。
 
-- **布局**：深色侧边栏（`#001529`）+ 顶部导航条 + 多标签页 + 页脚，窄屏自动折叠
+- **布局**：深木色侧边栏（`#3E3229`）+ 顶部导航条 + 多标签页 + 页脚，窄屏自动折叠
 - **公寓管理**：分页查询（省市区 + 名称）、新增/编辑（含省市区级联、图片、标签、配套、杂费）、发布/下架、删除
 - **房间管理**：按公寓筛选、新增/编辑（含属性、配套、标签、支付方式、租期、图片）、发布/下架、删除
 - **预约看房**：分页查询、标记已看房/取消
@@ -320,7 +458,7 @@ VITE_PORT=5174                          # 前端端口
 - **系统管理**：员工（增删改查 + 启用禁用）、岗位
 
 > 官方 `rentHouseAdmin` 里还带有「角色 / 菜单权限 / 部门 / 操作日志」等模板页面，
-> 这些接口**尚庭公寓后端没有实现**（属于模板遗留），点进去会 404，属正常现象。
+> 这些接口**归心寓后端没有实现**（属于模板遗留），点进去会 404，属正常现象。
 > 本项目自带的 `web-admin-frontend` 没有这些无效菜单。
 
 ### 用户端 H5（`web-app-frontend`，官方版）
@@ -457,7 +595,7 @@ VITE_PORT=5174                          # 前端端口
     - 树形接口也可以直接测：`GET http://localhost:8081/app/region/listAsTree`，应返回 4 个省、其下若干市和区
 17. 找房：选省市区 + 租金区间 + 排序，列表能筛出结果；上拉能加载第二页
 18. 房间详情：图片、属性、支付方式、租期、配套、标签、杂费都有内容
-19. 登录：手机号 `13800000001` + 验证码 `123456` 能登录（或看 8081 控制台日志）
+19. 移动端 H5 / 网页版：用账号 `zhangsan` + 密码 `123456` 登录；点「立即注册」能新建一个账号并自动登录
 20. 预约：提交预约 → 「我的预约」出现记录
 21. 签约：提交租约 → 「我的租约」出现记录，状态为「签约待确认」
 22. 浏览历史：看过房间后进「浏览历史」有记录
@@ -476,7 +614,7 @@ VITE_PORT=5174                          # 前端端口
 2. 补全用户端后端：签约流程、预约校验与取消、浏览历史去重、房间/公寓列表图片与标签、用户资料接口、文件上传、枚举参数转换、**省市区树接口 `GET /app/region/listAsTree`**
 3. 用户端 H5：**整体换成官方 H5**（13 个页面），最终目录名就是 `web-app-frontend`，由 `tools/finalize-web-app.ps1` 把 `rentHouseH5` 改名而来
 4. **移除 AI 问答功能**：后端的 `controller/ai`、`AiService(+Impl)`、`vo/ai`、`DeepSeekConfig(+Properties)` 共 8 个文件删除，yaml 的 `deepseek.*` 与 `/app/ai/**` 放行、Knife4j 的 AI 分组一并清理
-5. 后台管理界面 `web-admin-frontend`：**已按官方 `rentHouseAdmin` 的视觉规范重做**（深色侧边栏 `#001529`、主色 `#1890ff`、顶部导航 + 多标签页 + 页脚、玻璃拟态登录页）。官方 `rentHouseAdmin` 本身也无需改代码即可对接本项目后端，二者可互换
+5. 后台管理界面 `web-admin-frontend`：**布局照 rentHouseAdmin 重做，配色改为奶油原木风**（深木色侧边栏 `#3E3229`、点缀色陶土橙 `#E07A5F`、米白内容区 `#F9F7F2`、顶部导航 + 多标签页 + 页脚、木色渐变登录页）。官方 `rentHouseAdmin` 本身也无需改代码即可对接本项目后端，二者可互换
 6. 新增 `sql/lease.sql` 数据库初始化脚本
 
 ### 修复的原有 bug
@@ -496,6 +634,7 @@ VITE_PORT=5174                          # 前端端口
 | `web-admin/.../controller/system/SystemPostController.java` | 分页方法是 `private` | 岗位分页可能**无法被 Spring MVC 映射** |
 | `web-admin/.../controller/lease/LeaseAgreementController.java` | `@GetMapping(name = "getById")` 中的 `name` 不是路径属性 | ⚠️ **更正：这一条原先被我误判成 bug。** 官方前端 `rentHouseAdmin` 调的正是 `GET /admin/agreement?id=`（类根路径），所以这种写法是**有意为之**。已改为 `@GetMapping({"", "getById"})`，两种路径都支持，既兼容官方前端也兼容自建前端 |
 | `common/.../mybatisplus/MybatisPlusObjectHandler.java` | `updateFill` 里用了 `strictInsertFill` | 更新时 `update_time` 不自动填充 |
+| `common/.../mybatisplus/MybatisPlusObjectHandler.java` | `insertFill` 只填了 `createTime`，没填 `updateTime`；而 `BaseEntity.updateTime` 标了 `FieldFill.INSERT_UPDATE`，MyBatis-Plus 对带 fill 的字段在 INSERT 时**无条件写进 SQL**，于是拼出 `update_time = null` | **所有 INSERT 全部 500**：`Column 'update_time' cannot be null`（新增预约 / 新增公寓 / 新增房间都挂）。修复：`insertFill` 里同时填 `createTime` 和 `updateTime` |
 
 另外：`SystemPost` 的「岗位编码」实体字段名是 **`postCode`**（映射到数据库列 `code`），
 前端表单/表格用的也是 `postCode`，注意别写成 `code`。

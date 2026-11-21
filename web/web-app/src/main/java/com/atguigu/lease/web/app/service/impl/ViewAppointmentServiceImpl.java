@@ -79,6 +79,10 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
 
     @Override
     public void saveOrUpdateAppointment(ViewAppointment appointment, Long userId, String phone) {
+        if (userId == null) {
+            throw new LeaseException("登录已失效，请重新登录后再预约",
+                    ResultCodeEnum.APP_LOGIN_AUTH.getCode());
+        }
         if (appointment.getApartmentId() == null) {
             throw new LeaseException("请选择要预约的公寓", ResultCodeEnum.PARAM_ERROR.getCode());
         }

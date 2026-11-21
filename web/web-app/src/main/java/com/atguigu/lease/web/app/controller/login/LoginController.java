@@ -9,6 +9,7 @@ import com.atguigu.lease.model.entity.UserInfo;
 import com.atguigu.lease.web.app.service.LoginService;
 import com.atguigu.lease.web.app.service.UserInfoService;
 import com.atguigu.lease.web.app.vo.user.LoginVo;
+import com.atguigu.lease.web.app.vo.user.RegisterVo;
 import com.atguigu.lease.web.app.vo.user.UserInfoVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,10 +35,24 @@ public class LoginController {
     }
 
     @PostMapping("login")
-    @Operation(summary = "登录（账号密码 / 短信验证码，移动端默认用账号密码）")
+    @Operation(summary = "登录（账号密码 / 手机号+短信验证码）",
+            description = "账号密码：{\"username\":\"zhangsan\",\"password\":\"123456\"}；"
+                    + "短信验证码：{\"phone\":\"13800000001\",\"code\":\"123456\"}")
     public Result<String> login(@RequestBody LoginVo loginVo) {
         String token = loginService.login(loginVo);
         return Result.ok(token);
+    }
+
+    /**
+     * 注册：账号 + 密码 + 手机号（昵称可选）。
+     * 注册成功后直接返回 token，前端可以免登录直接进站。
+     */
+    @PostMapping("register")
+    @Operation(summary = "注册（账号密码）",
+            description = "入参 {\"username\":\"xiaoming\",\"password\":\"123456\","
+                    + "\"phone\":\"13900000000\",\"nickname\":\"小明\"}，成功返回 token")
+    public Result<String> register(@RequestBody RegisterVo registerVo) {
+        return Result.ok(loginService.register(registerVo));
     }
 
     /**

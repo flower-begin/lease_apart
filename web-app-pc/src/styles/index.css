@@ -1,0 +1,201 @@
+/* =============================================================================
+ *  归心寓 · 用户端网页版  ——  奶油原木风配色
+ *
+ *  60%  主色（背景 / 大面积留白）：米白 #F9F7F2、暖白 #FFFDFA
+ *  30%  辅助色（导航 / 区块 / 标签）：奶茶 #E6D5C3、浅木 #D4B895
+ *  10%  点缀色（CTA / 价格 / 图标）：陶土橙 #E07A5F、沙金 #F2CC8F
+ *
+ *  文字用暖灰，避免纯黑破坏温暖感。
+ * ========================================================================== */
+
+:root {
+  /* ---------- 10% 点缀色：陶土橙 + 沙金 ---------- */
+  --brand: #e07a5f;
+  --brand-dark: #c9654c;
+  --brand-deep: #b3624c;
+  --brand-light: #f2cc8f;
+
+  /* ---------- 30% 辅助色：奶茶 / 浅木 ---------- */
+  --wood: #e6d5c3;
+  --wood-dark: #d4b895;
+  --wood-soft: #f3e7db;
+
+  /* ---------- 文字（暖灰） ---------- */
+  --text-1: #3d3733;
+  --text-2: #6b615a;
+  --text-3: #9c928a;
+
+  /* ---------- 60% 主色：米白 / 燕麦 ---------- */
+  --bg-page: #f9f7f2;
+  --bg-card: #fffdfa;
+  --bg-header: #fffdfa;
+  --bg-sunken: #f4ede3;
+
+  --radius: 10px;
+  --border: #eadfd2;
+  --price: #e07a5f;
+  --shadow: 0 2px 12px rgba(120, 100, 80, 0.08);
+  --shadow-hover: 0 10px 26px rgba(120, 100, 80, 0.14);
+
+  --page-width: 1200px;
+
+  /* ---- Element Plus 主题色：陶土橙 ---- */
+  --el-color-primary: #e07a5f;
+  --el-color-primary-light-3: #e9a28f;
+  --el-color-primary-light-5: #f0bcaf;
+  --el-color-primary-light-7: #f6d7cf;
+  --el-color-primary-light-8: #f9e4df;
+  --el-color-primary-light-9: #fcf2ef;
+  --el-color-primary-dark-2: #b3624c;
+
+  --el-border-radius-base: 8px;
+  --el-text-color-primary: #3d3733;
+  --el-text-color-regular: #6b615a;
+  --el-text-color-secondary: #9c928a;
+  --el-border-color: #eadfd2;
+  --el-border-color-light: #f0e6da;
+  --el-border-color-lighter: #f5ede4;
+  --el-fill-color-blank: #fffdfa;
+  --el-bg-color: #fffdfa;
+  --el-bg-color-overlay: #fffdfa;
+  --el-bg-color-page: #f9f7f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text-1);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- 通用布局 ---------- */
+.page-wrap {
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(234, 223, 210, 0.7);
+}
+
+.card-pad {
+  padding: 20px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--brand);
+}
+
+.muted {
+  color: var(--text-3);
+}
+
+.price {
+  color: var(--price);
+  font-weight: 700;
+}
+
+.price small {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.empty-box {
+  padding: 60px 0;
+}
+
+/* ---------- Element Plus 细节微调，贴合原木风 ---------- */
+.el-card,
+.el-button,
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: 8px;
+}
+
+.el-table th.el-table__cell {
+  background: #fbf6ee !important;
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.el-table td.el-table__cell,
+.el-table tr {
+  background: var(--bg-card);
+}
+
+.el-tag {
+  border-radius: 4px;
+}
+
+.el-dialog,
+.el-message-box {
+  border-radius: var(--radius);
+}
+
+.el-divider {
+  border-color: var(--border);
+}
+
+/* 输入框底色也偏暖一点 */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  background-color: #fffdfa;
+}
+
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(160, 140, 120, 0.35);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 140, 120, 0.55);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
